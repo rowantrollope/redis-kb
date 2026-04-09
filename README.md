@@ -22,18 +22,35 @@ Personal Redis management LLM wiki, inspired by Karpathy's `llm-wiki` pattern.
 ## Quickstart
 
 ```bash
-python3 -m pip install -r requirements.txt
-python3 scripts/collect_sources.py --limit 8
-python3 scripts/build_wiki.py
-python3 scripts/lint_wiki.py
+make setup
+make wiki
 ```
 
 Then run the frontend:
 
 ```bash
+make frontend
+```
+
+The default frontend port is `3010` so it does not collide with common local services on `3000`.
+The development server uses webpack mode because Turbopack currently mis-resolves Tailwind when the app reads wiki files from outside `frontend/`.
+Override it if needed:
+
+```bash
+make frontend PORT=3020
+```
+
+If you prefer the underlying commands directly, use the repo-local virtualenv instead of the system Python:
+
+```bash
+python3 -m venv .venv
+./.venv/bin/pip install -r requirements.txt
+./.venv/bin/python scripts/collect_sources.py --limit 8
+./.venv/bin/python scripts/build_wiki.py
+./.venv/bin/python scripts/lint_wiki.py
 cd frontend
 npm install
-npm run dev
+npm run dev -- --hostname 127.0.0.1 --port 3010
 ```
 
 ## qmd integration (recommended)

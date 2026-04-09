@@ -1,28 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This frontend renders the generated Redis wiki content from the repository-level `wiki/` directory.
 
 ## Getting Started
 
-First, run the development server:
+From the repository root, install dependencies and start the app:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+make setup
+make build
+make frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The default dev URL is [http://127.0.0.1:3010](http://127.0.0.1:3010).
+The frontend intentionally uses webpack dev mode because the current Turbopack setup conflicts with loading wiki content from `../wiki`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+If you only want to work inside `frontend/`, install dependencies there and pass an explicit port:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev -- --hostname 127.0.0.1 --port 3010
+```
+
+The page content is loaded from `../wiki`, so regenerate wiki artifacts after updating raw sources:
+
+```bash
+../.venv/bin/python ../scripts/build_wiki.py
+../.venv/bin/python ../scripts/lint_wiki.py
+```
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+- [Next.js Documentation](https://nextjs.org/docs)
+- [App Router](https://nextjs.org/docs/app)
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.

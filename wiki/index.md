@@ -1,6 +1,6 @@
 # Redis SRE LLM Wiki Index
 
-Last updated: 2026-04-08
+Last updated: 2026-04-09
 Total raw sources: 3
 
 ## Topic pages

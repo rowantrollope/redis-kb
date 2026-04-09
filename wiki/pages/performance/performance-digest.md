@@ -1,6 +1,6 @@
 ---
 title: "Performance Digest"
-last_updated: 2026-04-08
+last_updated: 2026-04-09
 tags: [performance, digest]
 source_count: 2
 ---

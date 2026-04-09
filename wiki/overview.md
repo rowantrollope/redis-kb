@@ -1,6 +1,6 @@
 ---
 title: "Redis SRE Knowledge Base Overview"
-last_updated: 2026-04-08
+last_updated: 2026-04-09
 tags: [overview, redis, sre]
 source_count: 3
 ---
