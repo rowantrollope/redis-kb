@@ -1,0 +1,65 @@
+---
+title: Cluster environment optimization
+url: https://redis.io/docs/latest/operate/rs/clusters/optimize/optimization/
+retrieved_utc: '2026-04-09T20:46:03.817616+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/rs/clusters/optimize/optimization/index.html.md
+---
+
+# Cluster environment optimization
+
+```json metadata
+{
+  "title": "Cluster environment optimization",
+  "description": "Optimize your cluster environments for better performance.",
+  "categories": ["docs","operate","rs"],
+  "tableOfContents": {"sections":[{"id":"failure-detection-sensitivity-policies","title":"Failure detection sensitivity policies"},{"id":"change-failure-detection-sensitivity","title":"Change failure detection sensitivity"}]}
+
+,
+  "codeExamples": []
+}
+```Redis Software uses various algorithms to optimize
+performance. As part of this process, Redis Software examines usage
+and load to adjust its runtime configuration. Depending
+on your specific usage and load, Redis Software might take some
+time to adjust for optimal performance.
+
+To ensure optimal performance, you must run your workload several times
+and for a long duration until performance stabilizes.
+
+## Failure detection sensitivity policies
+
+You can optimize your cluster's thresholds and timeouts for different environments using the `failure_detection_sensitivity` cluster policy:
+
+- `high` (previously known as `local-network watchdog_profile`) â high failure detection sensitivity, lower thresholds, and faster failure detection and failover
+
+- `low` (previously known as `cloud watchdog_profile`) â low failure detection sensitivity and higher tolerance for latency variance (also called network jitter)
+
+Depending on which policy you choose, Redis Software uses different
+thresholds to make operation-related decisions.
+
+The default policy is `high` failure detection sensitivity for `local-network` environments. If you are
+running Redis Software in a cloud environment, you should change the
+configuration.
+
+## Change failure detection sensitivity
+
+To change the cluster's `failure_detection_sensitivity`, run one of the following [`rladmin`]() commands.
+
+- For Redis Software version 6.4.2-69 and later, run:
+
+    ```sh
+    rladmin tune cluster failure_detection_sensitivity [ low | high ]
+    ```
+
+- For Redis Software version 6.4.2-61 and earlier, run:
+
+    ```sh
+    rladmin tune cluster watchdog_profile [ cloud | local-network ]
+    ```
+
+If Redis Software still
+does not meet your performance expectations after following these instructions, [contact support](https://redis.com/company/support/) for help optimizing your environment.

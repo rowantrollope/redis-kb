@@ -1,0 +1,139 @@
+---
+title: crdb-cli crdb health-report
+url: https://redis.io/docs/latest/operate/rs/references/cli-utilities/crdb-cli/crdb/health-report/
+retrieved_utc: '2026-04-09T20:46:04.487210+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/rs/references/cli-utilities/crdb-cli/crdb/health-report/index.html.md
+---
+
+# crdb-cli crdb health-report
+
+```json metadata
+{
+  "title": "crdb-cli crdb health-report",
+  "description": "Shows the health report of an Active-Active database.",
+  "categories": ["docs","operate","rs"],
+  "tableOfContents": {"sections":[]}
+
+,
+  "codeExamples": []
+}
+```
+Shows the health report of the API management layer of an Active-Active database.
+
+```sh
+crdb-cli crdb health-report --crdb-guid <guid>
+```
+
+### Parameters
+
+| Parameter           | Value  | Description                         |
+|---------------------|--------|-------------------------------------|
+| crdb-guid  | string | The GUID of the database (required) |
+
+### Returns
+
+Returns the health report of the API management layer of the database.
+
+### Example
+
+```sh
+$ crdb-cli crdb health-report --crdb-guid d84f6fe4-5bb7-49d2-a188-8900e09c6f66
+[
+  {
+    "active_config_version":1,
+    "cluster_name":"cluster2.redis.local",
+    "configurations":[
+      {
+        "causal_consistency":false,
+        "encryption":false,
+        "featureset_version":5,
+        "instances":[
+          {
+            "cluster":{
+              "name":"cluster1.redis.local",
+              "url":"https:\/\/cluster1.redis.local:9443"
+            },
+            "db_uid":"",
+            "id":1
+          },
+          {
+            "cluster":{
+              "name":"cluster2.redis.local",
+              "url":"https:\/\/cluster2.redis.local:9443"
+            },
+            "db_uid":"1",
+            "id":2
+          }
+        ],
+        "name":"database1",
+        "protocol_version":1,
+        "status":"commit-completed",
+        "version":1
+      }
+    ],
+    "connections":[
+      {
+        "name":"cluster1.redis.local",
+        "status":"ok"
+      },
+      {
+        "name":"cluster2.redis.local",
+        "status":"ok"
+      }
+    ],
+    "guid":"d84f6fe4-5bb7-49d2-a188-8900e09c6f66",
+    "name":"database1",
+    "connection_error":null
+  },
+  {
+    "active_config_version":1,
+    "cluster_name":"cluster1.redis.local",
+    "configurations":[
+      {
+        "causal_consistency":false,
+        "encryption":false,
+        "featureset_version":5,
+        "instances":[
+          {
+            "cluster":{
+              "name":"cluster1.redis.local",
+              "url":"https:\/\/cluster1.redis.local:9443"
+            },
+            "db_uid":"4",
+            "id":1
+          },
+          {
+            "cluster":{
+              "name":"cluster2.redis.local",
+              "url":"https:\/\/cluster2.redis.local:9443"
+            },
+            "db_uid":"",
+            "id":2
+          }
+        ],
+        "name":"database1",
+        "protocol_version":1,
+        "status":"commit-completed",
+        "version":1
+      }
+    ],
+    "connections":[
+      {
+        "name":"cluster1.redis.local",
+        "status":"ok"
+      },
+      {
+        "name":"cluster2.redis.local",
+        "status":"ok"
+      }
+    ],
+    "guid":"d84f6fe4-5bb7-49d2-a188-8900e09c6f66",
+    "name":"database1",
+    "connection_error":null
+  }
+]
+```

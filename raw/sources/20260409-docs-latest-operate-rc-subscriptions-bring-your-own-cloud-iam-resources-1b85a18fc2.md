@@ -1,0 +1,51 @@
+---
+title: Create IAM resources for AWS cloud accounts
+url: https://redis.io/docs/latest/operate/rc/subscriptions/bring-your-own-cloud/iam-resources/
+retrieved_utc: '2026-04-09T20:45:51.612469+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/rc/subscriptions/bring-your-own-cloud/iam-resources/index.html.md
+---
+
+# Create IAM resources for AWS cloud accounts
+
+```json metadata
+{
+  "title": "Create IAM resources for AWS cloud accounts",
+  "description": "",
+  "categories": ["docs","operate","rc"],
+  "tableOfContents": {"sections":[]}
+
+,
+  "codeExamples": []
+}
+```For Redis Cloud Bring your Own Cloud (BYOC) on Amazon Web Services (AWS), we manage the supporting infrastructure for you in dedicated AWS accounts.
+
+You can manage this infrastructure with your own AWS accounts.  
+
+You'll want these accounts to be separate from any AWS application accounts 
+and you'll need to create dedicated [identity and access management](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html) (IAM) resources to allow us to manage the infrastructure.
+
+In the new AWS account, you need to create:
+
+- An **instance role**
+- A user with an **access key**
+- A role that grants **AWS console access**
+
+Save the access key in a secure location so that you can enter it when you [register the cloud account]() with your Redis Cloud subscription.
+
+
+We use the provided credentials to configure your AWS environment and provision required resources.
+
+You **must not** change the configurations of provisioned resources or stop or terminate provisioned instances. If you do, your databases will be inaccessible and Redis will not be able to ensure database stability. See [Avoid service disruption]() for more details.
+
+
+For help creating an AWS user, see the [AWS IAM documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
+
+You can use one of the following tools to create IAM resources:
+
+- [CloudFormation]()
+- [Terraform]()
+- The [AWS Console]()

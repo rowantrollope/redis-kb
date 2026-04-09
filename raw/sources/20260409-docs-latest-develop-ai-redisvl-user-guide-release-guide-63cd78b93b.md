@@ -1,0 +1,40 @@
+---
+title: Release Guides
+url: https://redis.io/docs/latest/develop/ai/redisvl/user_guide/release_guide/
+retrieved_utc: '2026-04-09T20:46:06.781423+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/develop/ai/redisvl/user_guide/release_guide/index.html.md
+---
+
+# Release Guides
+
+```json metadata
+{
+  "title": "Release Guides",
+  "description": "",
+  "categories": null,
+  "tableOfContents": {"sections":[]}
+
+,
+  "codeExamples": []
+}
+```
+
+This section contains guidelines and information for RedisVL releases.
+
+
+
+* [0.5.1 Feature Overview](0_5_0_release/)
+  * [Whatâs new?](0_5_0_release/#what-s-new)
+  * [Define and load index for examples](0_5_0_release/#define-and-load-index-for-examples)
+* [HybridQuery class](0_5_0_release/#hybridquery-class)
+* [TextQueries](0_5_0_release/#textqueries)
+* [Threshold optimization](0_5_0_release/#threshold-optimization)
+* [Schema validation](0_5_0_release/#schema-validation)
+* [Timestamp filters](0_5_0_release/#timestamp-filters)
+* [Batch search](0_5_0_release/#batch-search)
+* [Vector normalization](0_5_0_release/#vector-normalization)
+* [Hybrid policy on knn with filters](0_5_0_release/#hybrid-policy-on-knn-with-filters)

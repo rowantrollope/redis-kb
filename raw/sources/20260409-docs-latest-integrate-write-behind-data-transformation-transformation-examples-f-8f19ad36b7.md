@@ -1,0 +1,77 @@
+---
+title: Write-behind foreach example
+url: https://redis.io/docs/latest/integrate/write-behind/data-transformation/transformation-examples/foreach-example/
+retrieved_utc: '2026-04-09T20:45:56.680248+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/integrate/write-behind/data-transformation/transformation-examples/foreach-example/index.html.md
+---
+
+# Write-behind foreach example
+
+```json metadata
+{
+  "title": "Write-behind foreach example",
+  "description": "",
+  "categories": ["docs","integrate","rs","rdi"],
+  "group": "di",
+  "tableOfContents": {"sections":[]}
+
+,
+  "codeExamples": []
+}
+```
+
+The `foreach` section is used to explode a list of objects or arrays to rows in a selected target.
+The `foreach` expression is structured as `<field_name>:<JMESPath expression>`.
+The following example uses the `add_field` transformation to prepare the input JSON to the desired structure. Then, it applies `foreach` to write each `order` object as a relational database record using `keys` and `mapping`.
+In this example, the `JMESPath` function `to_string` is used to flatten an array of objects, `specs`, to a string.
+
+```yaml
+source:
+  redis:
+    key_pattern: orderdetail:*
+    trigger: write-behind
+    exclude_commands: ["json.del"]
+transform:
+  - uses: add_field
+    with:
+      fields:
+        - field: my_orders
+          language: jmespath
+          expression: |
+            orders[*].{
+              code: code
+              periodStartTime: periodStartTime
+              periodEndTime: periodEndTime
+              specs: to_string(specs)
+            }
+output:
+  - uses: relational.write
+    with:
+      connection: mssql
+      schema: dbo
+      table: OrderMaster
+      keys:
+        - Code: orderDetail.code
+      mapping:
+        - DeliveryDate: orderDetail.deliveryDate
+        - ProductCode: orderDetail.productCode
+        - CountryCode: orderDetail.countryCode
+  - uses: relational.write
+    with:
+      connection: mssql
+      schema: dbo
+      table: Order
+      foreach: "order: my_orders[]"
+      keys:
+        - Code: order.code
+      mapping:
+        - OrderDetailCode: orderDetail.code
+        - PeriodStartTime: order.periodStartTime
+        - PeriodEndTime: order.periodEndTime
+        - Specs: order.specs
+
+```

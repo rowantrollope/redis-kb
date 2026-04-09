@@ -1,0 +1,90 @@
+---
+title: HSETEX
+url: https://redis.io/docs/latest/commands/hsetex/
+retrieved_utc: '2026-04-09T20:46:04.694082+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/commands/hsetex/index.html.md
+---
+
+# HSETEX
+
+```json metadata
+{
+  "title": "HSETEX",
+  "description": "Set the value of one or more fields of a given hash key, and optionally set their expiration.",
+  "categories": ["docs","develop","stack","oss","rs","rc","oss","kubernetes","clients"],
+  "arguments": [{"display_text":"key","key_spec_index":0,"name":"key","type":"key"},{"arguments":[{"display_text":"fnx","name":"fnx","token":"FNX","type":"pure-token"},{"display_text":"fxx","name":"fxx","token":"FXX","type":"pure-token"}],"name":"condition","optional":true,"type":"oneof"},{"arguments":[{"display_text":"seconds","name":"seconds","token":"EX","type":"integer"},{"display_text":"milliseconds","name":"milliseconds","token":"PX","type":"integer"},{"display_text":"unix-time-seconds","name":"unix-time-seconds","token":"EXAT","type":"unix-time"},{"display_text":"unix-time-milliseconds","name":"unix-time-milliseconds","token":"PXAT","type":"unix-time"},{"display_text":"keepttl","name":"keepttl","token":"KEEPTTL","type":"pure-token"}],"name":"expiration","optional":true,"type":"oneof"},{"arguments":[{"display_text":"numfields","name":"numfields","type":"integer"},{"arguments":[{"display_text":"field","name":"field","type":"string"},{"display_text":"value","name":"value","type":"string"}],"multiple":true,"name":"data","type":"block"}],"name":"fields","token":"FIELDS","type":"block"}],
+  "syntax_fmt": "HSETEX key [FNX | FXX] [EXÂ seconds | PXÂ milliseconds |\n  EXATÂ unix-time-seconds | PXATÂ unix-time-milliseconds | KEEPTTL]\n  FIELDSÂ numfields field value [field value ...]",
+  "complexity": "O(N) where N is the number of fields being set.",
+  "group": "hash",
+  "command_flags": ["write","denyoom","fast"],
+  "acl_categories": ["@write","@hash","@fast"],
+  "since": "8.0.0",
+  "arity": -6,
+  "key_specs": [{"RW":true,"begin_search":{"spec":{"index":1},"type":"index"},"find_keys":{"spec":{"keystep":1,"lastkey":0,"limit":0},"type":"range"},"update":true}],
+  "tableOfContents": {"sections":[{"id":"options","title":"Options"},{"id":"example","title":"Example"},{"id":"redis-software-and-redis-cloud-compatibility","title":"Redis Software and Redis Cloud compatibility"},{"id":"return-information","title":"Return information"}]}
+
+,
+  "codeExamples": []
+}
+```
+Set the value of one or more fields of a given hash key and optionally
+set their expiration time or time-to-live (TTL). If the given key already holds a value, it is overwritten and any previous TTLs associated with the key are discarded.
+
+## Options
+
+The `HSETEX` command supports a set of options:
+
+* `FNX` -- Only set the fields if none of them already exist.
+* `FXX` -- Only set the fields if all of them already exist.
+* `EX seconds` -- Set the specified expiration time in seconds.
+* `PX milliseconds` -- Set the specified expiration time in milliseconds.
+* `EXAT unix-time-seconds` -- Set the specified Unix time in seconds at which the fields will expire.
+* `PXAT unix-time-milliseconds` -- Set the specified Unix time in milliseconds at which the fields will expire.
+* `KEEPTTL` -- Retain the TTL associated with the fields.
+
+The `EX`, `PX`, `EXAT`, `PXAT`, and `KEEPTTL` options are mutually exclusive.
+
+## Example
+
+```
+redis> HSETEX mykey EXAT 1740470400 FIELDS 2 field1 "Hello" field2 "World"
+(integer) 1
+redis> HTTL mykey FIELDS 2 field1 field2
+1) (integer) 55627
+2) (integer) 55627
+redis> HSETEX mykey FNX EX 60 FIELDS 2 field1 "Hello" field2 "World"
+(integer) 0
+redis> HSETEX mykey FXX EX 60 KEEPTTL FIELDS 2 field1 "hello" field2 "world"
+(error) ERR Only one of EX, PX, EXAT, PXAT or KEEPTTL arguments can be specified
+redis> HSETEX mykey FXX KEEPTTL FIELDS 2 field1 "hello" field2 "world"
+(integer) 1
+redis> HTTL mykey FIELDS 2 field1 field2
+1) (integer) 55481
+2) (integer) 55481
+```
+
+## Redis Software and Redis Cloud compatibility
+
+| Redis<br />Software | Redis<br />Cloud | <span style="min-width: 9em; display: table-cell">Notes</span> |
+|:----------------------|:-----------------|:------|
+| <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> | <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> |  |
+
+## Return information
+
+**RESP2:**
+
+One of the following:
+* [Integer reply](../../develop/reference/protocol-spec#integers): `0` if no fields were set.
+* [Integer reply](../../develop/reference/protocol-spec#integers): `1` if all the fields wereset.
+
+**RESP3:**
+
+One of the following:
+* [Integer reply](../../develop/reference/protocol-spec#integers): `0` if no fields were set.
+* [Integer reply](../../develop/reference/protocol-spec#integers): `1` if all the fields wereset.
+
+

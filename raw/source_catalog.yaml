@@ -1,5 +1,11 @@
 # Curated Redis SRE knowledge sources for scraping + ingestion.
 sources:
+  - title: Redis docs sitemap
+    url: https://redis.io/docs/latest/sitemap.xml
+    tags: [official, docs, manifest]
+    kind: sitemap
+    prefixes:
+      - https://redis.io/docs/latest/
   - title: Redis documentation landing
     url: https://redis.io/docs/latest/
     tags: [official, docs, overview]
@@ -18,12 +24,18 @@ sources:
   - title: Redis Cluster specification
     url: https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/
     tags: [official, cluster]
+  - title: Scale with Redis Cluster
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/
+    tags: [official, cluster, operations]
   - title: Redis latency troubleshooting
     url: https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/latency/
     tags: [official, troubleshooting, latency]
   - title: Redis memory optimization
     url: https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/memory-optimization/
     tags: [official, performance, memory]
+  - title: Optimizing Redis overview
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/
+    tags: [official, performance, operations]
   - title: Redis security
     url: https://redis.io/docs/latest/operate/oss_and_stack/management/security/
     tags: [official, security]

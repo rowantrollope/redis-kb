@@ -1,0 +1,53 @@
+---
+title: Redis Data Integration release notes 1.10.0 (May 2025)
+url: https://redis.io/docs/latest/integrate/redis-data-integration/release-notes/rdi-1-10-0/
+retrieved_utc: '2026-04-09T20:46:01.445362+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/integrate/redis-data-integration/release-notes/rdi-1-10-0/index.html.md
+---
+
+# Redis Data Integration release notes 1.10.0 (May 2025)
+
+```json metadata
+{
+  "title": "Redis Data Integration release notes 1.10.0 (May 2025)",
+  "description": "Added support for MongoDB as a source, with a scaffold template and enhanced configuration validation. Implemented automatic deletion of pods affected by secret rotation.",
+  "categories": ["docs","operate","rs"],
+  "tableOfContents": {"sections":[{"id":"headlines","title":"Headlines"},{"id":"detailed-changes","title":"Detailed changes"},{"id":"limitations","title":"Limitations"}]}
+
+,
+  "codeExamples": []
+}
+```
+This minor release replaces the 1.8.0 release.
+
+RDIâs mission is to help Redis customers sync Redis Enterprise with live data from their slow disk-based databases to:
+
+- Meet the required speed and scale of read queries and provide an excellent and predictable user experience.
+- Save resources and time when building pipelines and coding data transformations.
+- Reduce the total cost of ownership by saving money on expensive database read replicas.
+
+RDI keeps the Redis cache up to date with changes in the primary database, using a [_Change Data Capture (CDC)_](https://en.wikipedia.org/wiki/Change_data_capture) mechanism.
+It also lets you _transform_ the data from relational tables into convenient and fast data structures that match your app's requirements. You specify the transformations using a configuration system, so no coding is required.
+
+## Headlines
+
+- Added support for MongoDB as a source, including MongoDB 6.0 and 7.0, for both on-premises and MongoDB Atlas deployments.
+- Introduced a MongoDB scaffold template and enhanced configuration validation.
+- Implemented automatic deletion of pods affected by secret rotation to ensure updated secrets are applied.
+
+## Detailed changes
+
+**Other Features, Improvements and Enhancements**
+
+The `redis-di scaffold` cli command can now scaffold MongoDB configuration. It can also scaffold different flavors:
+  - `--db-flavor mongodb-atlas`
+  - `--db-flavor mongodb-replica-set`
+  - `--db-flavor mongodb-sharded-cluster`
+
+## Limitations
+
+RDI can write data to a Redis Active-Active database. However, it doesn't support writing data to two or more Active-Active replicas. Writing data from RDI to several Active-Active replicas could easily harm data integrity as RDI is not synchronous with the source database commits.

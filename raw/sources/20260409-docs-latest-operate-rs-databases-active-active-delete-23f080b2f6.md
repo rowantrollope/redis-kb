@@ -1,0 +1,40 @@
+---
+title: Delete Active-Active databases
+url: https://redis.io/docs/latest/operate/rs/databases/active-active/delete/
+retrieved_utc: '2026-04-09T20:45:56.849558+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/rs/databases/active-active/delete/index.html.md
+---
+
+# Delete Active-Active databases
+
+```json metadata
+{
+  "title": "Delete Active-Active databases",
+  "description": "Considerations while deleting Active-Active databases.",
+  "categories": ["docs","operate","rs"],
+  "tableOfContents": {"sections":[]}
+
+,
+  "codeExamples": []
+}
+```
+When you delete an Active-Active database (formerly known as CRDB),
+all instances of the Active-Active database are deleted from all participating clusters.
+
+
+This action is immediate, non-reversible, and has no rollback.
+
+
+Because Active-Active databases are made up of instances on multiple participating clusters,
+to restore a deleted Active-Active database you must create the database again with all of its instances
+and then restore the data to the database from backup.
+
+We recommended that you:
+
+- Back up your data and test the restore on another database before you delete an Active-Active database.
+- Consider [flushing the data]() from the database
+    so that you can keep the Active-Active database configuration and restore the data to it if necessary.

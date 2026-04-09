@@ -1,0 +1,69 @@
+---
+title: HINCRBY
+url: https://redis.io/docs/latest/commands/hincrby/
+retrieved_utc: '2026-04-09T20:46:04.592497+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/commands/hincrby/index.html.md
+---
+
+# HINCRBY
+
+```json metadata
+{
+  "title": "HINCRBY",
+  "description": "Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.",
+  "categories": ["docs","develop","stack","oss","rs","rc","oss","kubernetes","clients"],
+  "arguments": [{"display_text":"key","key_spec_index":0,"name":"key","type":"key"},{"display_text":"field","name":"field","type":"string"},{"display_text":"increment","name":"increment","type":"integer"}],
+  "syntax_fmt": "HINCRBY key field increment",
+  "complexity": "O(1)",
+  "group": "hash",
+  "command_flags": ["write","denyoom","fast"],
+  "acl_categories": ["@write","@hash","@fast"],
+  "since": "2.0.0",
+  "arity": 4,
+  "key_specs": [{"RW":true,"access":true,"begin_search":{"spec":{"index":1},"type":"index"},"find_keys":{"spec":{"keystep":1,"lastkey":0,"limit":0},"type":"range"},"update":true}],
+  "tableOfContents": {"sections":[{"id":"examples","title":"Examples"},{"id":"redis-software-and-redis-cloud-compatibility","title":"Redis Software and Redis Cloud compatibility"},{"id":"return-information","title":"Return information"}]}
+
+,
+  "codeExamples": []
+}
+```Increments the number stored at `field` in the hash stored at `key` by
+`increment`.
+If `key` does not exist, a new key holding a hash is created.
+If `field` does not exist the value is set to `0` before the operation is
+performed.
+
+The range of values supported by `HINCRBY` is limited to 64 bit signed integers.
+
+## Examples
+
+Since the `increment` argument is signed, both increment and decrement
+operations can be performed:
+
+
+HSET myhash field 5
+HINCRBY myhash field 1
+HINCRBY myhash field -1
+HINCRBY myhash field -10
+
+
+## Redis Software and Redis Cloud compatibility
+
+| Redis<br />Software | Redis<br />Cloud | <span style="min-width: 9em; display: table-cell">Notes</span> |
+|:----------------------|:-----------------|:------|
+| <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> | <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> |  |
+
+## Return information
+
+**RESP2:**
+
+[Integer reply](../../develop/reference/protocol-spec#integers): the value of the field after the increment operation.
+
+**RESP3:**
+
+[Integer reply](../../develop/reference/protocol-spec#integers): the value of the field after the increment operation.
+
+

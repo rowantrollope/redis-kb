@@ -1,0 +1,71 @@
+---
+title: rladmin help
+url: https://redis.io/docs/latest/operate/rs/references/cli-utilities/rladmin/help/
+retrieved_utc: '2026-04-09T20:46:04.506553+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/rs/references/cli-utilities/rladmin/help/index.html.md
+---
+
+# rladmin help
+
+```json metadata
+{
+  "title": "rladmin help",
+  "description": "Shows available commands or specific command usage.",
+  "categories": ["docs","operate","rs"],
+  "tableOfContents": {"sections":[]}
+
+,
+  "codeExamples": []
+}
+```
+Lists all options and parameters for `rladmin` commands.
+
+``` sh
+rladmin help [command]
+```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+|  command   |  Display help for this `rladmin` command (optional)  |
+
+### Returns
+
+Returns a list of available `rladmin` commands.
+
+If a `command` is specified, returns a list of all the options and parameters for that `rladmin` command.
+
+### Example
+
+```sh
+$ rladmin help
+usage: rladmin [options] [command] [command args]
+
+Options:
+  -y  Assume Yes for all required user confirmations.
+
+Commands:
+  bind      Bind an endpoint
+  cluster   Cluster management commands
+  exit      Exit admin shell
+  failover  Fail-over master to slave
+  help      Show available commands, or use help <command> for a specific command
+  info      Show information about tunable parameters
+  migrate   Migrate elements between nodes
+  node      Node management commands
+  placement Configure shards placement policy
+  recover   Recover databases
+  restart   Restart database shards
+  status    Show status information
+  suffix    Suffix management
+  tune      Tune system parameters
+  upgrade   Upgrade entity version
+  verify    Cluster verification reports
+
+Use "rladmin help [command]" to get more information on a specific command.
+```

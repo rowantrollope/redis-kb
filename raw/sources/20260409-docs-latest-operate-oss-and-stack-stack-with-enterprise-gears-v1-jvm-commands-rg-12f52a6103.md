@@ -1,0 +1,70 @@
+---
+title: RG.JEXECUTE
+url: https://redis.io/docs/latest/operate/oss_and_stack/stack-with-enterprise/gears-v1/jvm/commands/rg-jexecute/
+retrieved_utc: '2026-04-09T20:45:57.351777+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/oss_and_stack/stack-with-enterprise/gears-v1/jvm/commands/rg-jexecute/index.html.md
+---
+
+# RG.JEXECUTE
+
+```json metadata
+{
+  "title": "RG.JEXECUTE",
+  "description": "Executes a Java function.",
+  "categories": ["docs","operate","stack"],
+  "tableOfContents": {"sections":[{"id":"arguments","title":"Arguments"},{"id":"returns","title":"Returns"},{"id":"examples","title":"Examples"}]}
+
+,
+  "codeExamples": []
+}
+```
+```sh
+RG.JEXECUTE <path.to.main.class> [UPGRADE] <JAR file>
+```
+
+Executes a Java function.
+
+The code runs immediately if it uses [`GearsBuilder.run()`](). Code that uses [`GearsBuilder.register()`]() will run later, every time certain events occur in the database.
+
+## Arguments
+
+| Name | Description |
+|------|-------------|
+| path.to.main.class | The path to the main class in the JAR |
+| JAR file | A JAR file that contains the RedisGears code to run or register |
+| UPGRADE | Upgrades registered code to a new version |
+
+
+## Returns
+
+If the executed code calls [`GearsBuilder.run()`](), it returns the output of the executed code.
+
+For registered code, it returns the string "`OK`" instead.
+
+## Examples
+
+The executed code in this example [runs]() immediately:
+
+```sh
+$ redis-cli -x RG.JEXECUTE com.domain.packagename.Reviews < /tmp/rgjvmtest-0.0.1-SNAPSHOT.jar
+1) 1) "3.6666666666666665"
+2) (empty array)
+```
+
+This example [registers]() the RedisGears code to run every time certain database events occur:
+
+```sh
+$ redis-cli -x RG.JEXECUTE com.domain.packagename.App < /tmp/rgjvmtest-0.0.1-SNAPSHOT.jar
+OK
+```
+
+Here's an example of how to upgrade registered code to a new version:
+
+```sh
+$ redis-cli -x RG.JEXECUTE com.domain.packagename.App UPGRADE < /tmp/rgjvmtest-0.0.2-SNAPSHOT.jar
+OK
+```

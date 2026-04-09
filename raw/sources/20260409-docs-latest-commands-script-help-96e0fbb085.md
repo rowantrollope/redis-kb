@@ -1,0 +1,49 @@
+---
+title: SCRIPT HELP
+url: https://redis.io/docs/latest/commands/script-help/
+retrieved_utc: '2026-04-09T20:46:07.288458+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/commands/script-help/index.html.md
+---
+
+# SCRIPT HELP
+
+```json metadata
+{
+  "title": "SCRIPT HELP",
+  "description": "Returns helpful text about the different subcommands.",
+  "categories": ["docs","develop","stack","oss","rs","rc","oss","kubernetes","clients"],
+  "syntax_fmt": "SCRIPT HELP",
+  "complexity": "O(1)",
+  "group": "scripting",
+  "command_flags": ["loading","stale"],
+  "acl_categories": ["@slow","@scripting"],
+  "since": "5.0.0",
+  "arity": 2,
+  "tableOfContents": {"sections":[{"id":"redis-software-and-redis-cloud-compatibility","title":"Redis Software and Redis Cloud compatibility"},{"id":"return-information","title":"Return information"}]}
+
+,
+  "codeExamples": []
+}
+```The `SCRIPT HELP` command returns a helpful text describing the different subcommands.
+
+## Redis Software and Redis Cloud compatibility
+
+| Redis<br />Software | Redis<br />Cloud | <span style="min-width: 9em; display: table-cell">Notes</span> |
+|:----------------------|:-----------------|:------|
+| <span title="Not supported">&#x274c; Standard</span><br /><span title="Not supported"><nobr>&#x274c; Active-Active</nobr></span> | <span title="Not supported">&#x274c; Standard</span><br /><span title="Not supported"><nobr>&#x274c; Active-Active</nobr></span> |  |
+
+## Return information
+
+**RESP2:**
+
+[Array reply](../../develop/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+
+**RESP3:**
+
+[Array reply](../../develop/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+
+

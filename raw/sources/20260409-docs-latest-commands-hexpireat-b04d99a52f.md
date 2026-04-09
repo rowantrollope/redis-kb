@@ -1,0 +1,97 @@
+---
+title: HEXPIREAT
+url: https://redis.io/docs/latest/commands/hexpireat/
+retrieved_utc: '2026-04-09T20:46:04.533520+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/commands/hexpireat/index.html.md
+---
+
+# HEXPIREAT
+
+```json metadata
+{
+  "title": "HEXPIREAT",
+  "description": "Set expiration for hash fields using an absolute Unix timestamp (seconds)",
+  "categories": ["docs","develop","stack","oss","rs","rc","oss","kubernetes","clients"],
+  "arguments": [{"display_text":"key","key_spec_index":0,"name":"key","type":"key"},{"display_text":"unix-time-seconds","name":"unix-time-seconds","type":"unix-time"},{"arguments":[{"display_text":"nx","name":"nx","token":"NX","type":"pure-token"},{"display_text":"xx","name":"xx","token":"XX","type":"pure-token"},{"display_text":"gt","name":"gt","token":"GT","type":"pure-token"},{"display_text":"lt","name":"lt","token":"LT","type":"pure-token"}],"name":"condition","optional":true,"type":"oneof"},{"arguments":[{"display_text":"numfields","name":"numfields","type":"integer"},{"display_text":"field","multiple":true,"name":"field","type":"string"}],"name":"fields","token":"FIELDS","type":"block"}],
+  "syntax_fmt": "HEXPIREAT key unix-time-seconds [NX | XX | GT | LT] FIELDSÂ numfields\n  field [field ...]",
+  "complexity": "O(N) where N is the number of specified fields",
+  "group": "hash",
+  "command_flags": ["write","denyoom","fast"],
+  "acl_categories": ["@write","@hash","@fast"],
+  "since": "7.4.0",
+  "arity": -6,
+  "key_specs": [{"RW":true,"begin_search":{"spec":{"index":1},"type":"index"},"find_keys":{"spec":{"keystep":1,"lastkey":0,"limit":0},"type":"range"},"update":true}],
+  "tableOfContents": {"sections":[{"id":"options","title":"Options"},{"id":"example","title":"Example"},{"id":"redis-software-and-redis-cloud-compatibility","title":"Redis Software and Redis Cloud compatibility"},{"id":"return-information","title":"Return information"}]}
+
+,
+  "codeExamples": []
+}
+````HEXPIREAT` has the same effect and semantics as [`HEXPIRE`](), but instead of
+specifying the number of seconds for the TTL (time to live), it takes
+an absolute [Unix timestamp](http://en.wikipedia.org/wiki/Unix_time) in seconds since Unix epoch. A
+timestamp in the past will delete the field immediately.
+
+For the specific semantics of the command, see [`HEXPIRE`]().
+
+## Options
+
+The `HEXPIREAT` command supports a set of options:
+
+* `NX` -- For each specified field, set expiration only when the field has no expiration.
+* `XX` -- For each specified field, set expiration only when the field has an existing expiration.
+* `GT` -- For each specified field, set expiration only when the new expiration is greater than current one.
+* `LT` -- For each specified field, set expiration only when the new expiration is less than current one.
+
+A non-volatile key is treated as an infinite TTL for the purposes of `GT` and `LT`.
+The `NS`, `XX`, `GT`, and `LT` options are mutually exclusive.
+
+## Example
+
+```
+redis> HSET mykey field1 "hello" field2 "world"
+(integer) 2
+redis> HEXPIREAT mykey 1715704971 FIELDS 2 field1 field2
+1) (integer) 1
+2) (integer) 1
+redis> HTTL mykey FIELDS 2 field1 field2
+1) (integer) 567
+2) (integer) 567
+```
+
+## Redis Software and Redis Cloud compatibility
+
+| Redis<br />Software | Redis<br />Cloud | <span style="min-width: 9em; display: table-cell">Notes</span> |
+|:----------------------|:-----------------|:------|
+| <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> | <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> |  |
+
+## Return information
+
+**RESP2:**
+
+One of the following:
+* [Array reply](../../develop/reference/protocol-spec#arrays). For each field:
+    - [Integer reply](../../develop/reference/protocol-spec#integers): `-2` if no such field exists in the provided hash key, or the provided key does not exist.
+    - [Integer reply](../../develop/reference/protocol-spec#integers): `0` if the specified NX, XX, GT, or LT condition has not been met.
+    - [Integer reply](../../develop/reference/protocol-spec#integers): `1` if the expiration time was set/updated.
+    - [Integer reply](../../develop/reference/protocol-spec#integers): `2` when `HEXPIRE` or `HPEXPIRE` is called with 0 seconds or milliseconds, or when `HEXPIREAT` or `HPEXPIREAT` is called with a past Unix time in seconds or milliseconds.
+* [Simple error reply](../../develop/reference/protocol-spec#simple-errors):
+    - if parsing failed, mandatory arguments are missing, unknown arguments are specified, or argument values are of the wrong type or out of range.
+    - if the provided key exists but is not a hash.
+
+**RESP3:**
+
+One of the following:
+* [Array reply](../../develop/reference/protocol-spec#arrays). For each field:
+    - [Integer reply](../../develop/reference/protocol-spec#integers): `-2` if no such field exists in the provided hash key, or the provided key does not exist.
+    - [Integer reply](../../develop/reference/protocol-spec#integers): `0` if the specified NX, XX, GT, or LT condition has not been met.
+    - [Integer reply](../../develop/reference/protocol-spec#integers): `1` if the expiration time was set/updated.
+    - [Integer reply](../../develop/reference/protocol-spec#integers): `2` when `HEXPIRE` or `HPEXPIRE` is called with 0 seconds or milliseconds, or when `HEXPIREAT` or `HPEXPIREAT` is called with a past Unix time in seconds or milliseconds.
+* [Simple error reply](../../develop/reference/protocol-spec#simple-errors):
+    - if parsing failed, mandatory arguments are missing, unknown arguments are specified, or argument values are of the wrong type or out of range.
+    - if the provided key exists but is not a hash.
+
+

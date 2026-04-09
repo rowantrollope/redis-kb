@@ -18,16 +18,111 @@ type ChatMessage = {
   time: string;
 };
 
-type FileTreeNode = {
-  name: string;
-  path: string;
-  type: "directory" | "file";
-  children?: FileTreeNode[];
-  doc?: WikiDoc;
+type DocKind = "overview" | "index" | "log" | "topic" | "note" | "runbook" | "page";
+
+type TopicGroup = {
+  slug: string;
+  label: string;
+  digest: WikiDoc | null;
+  notes: WikiDoc[];
+  sourceCount: number;
+  summary: string;
 };
+
+const TOPIC_ORDER = [
+  "operations",
+  "performance",
+  "resilience",
+  "persistence",
+  "cluster",
+  "security",
+  "sentinels",
+  "troubleshooting",
+];
 
 function formatTime() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function titleCase(value: string) {
+  return value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function normalizeDocTitle(title: string) {
+  return title.replace(/\s+Digest$/i, "").trim();
+}
+
+function getDocKind(doc: WikiDoc): DocKind {
+  if (doc.relPath === "wiki/overview.md") {
+    return "overview";
+  }
+  if (doc.relPath === "wiki/index.md") {
+    return "index";
+  }
+  if (doc.relPath === "wiki/log.md") {
+    return "log";
+  }
+
+  const match = doc.relPath.match(/^wiki\/pages\/([^/]+)\/([^/]+)\.md$/);
+  if (!match) {
+    return "page";
+  }
+
+  const [, topic, slug] = match;
+  if (topic === "runbooks") {
+    return "runbook";
+  }
+  if (slug === `${topic}-digest`) {
+    return "topic";
+  }
+  return "note";
+}
+
+function getTopicSlug(doc: WikiDoc) {
+  const match = doc.relPath.match(/^wiki\/pages\/([^/]+)\//);
+  return match?.[1] ?? null;
+}
+
+function getTopicLabel(doc: WikiDoc, slug: string) {
+  if (getDocKind(doc) === "topic") {
+    return normalizeDocTitle(doc.title);
+  }
+  return titleCase(slug);
+}
+
+function getDocEyebrow(doc: WikiDoc) {
+  const kind = getDocKind(doc);
+  if (kind === "overview") {
+    return "Overview";
+  }
+  if (kind === "index") {
+    return "Index";
+  }
+  if (kind === "log") {
+    return "Change Log";
+  }
+  if (kind === "topic") {
+    return "Topic Hub";
+  }
+  if (kind === "note") {
+    return "Operational Note";
+  }
+  if (kind === "runbook") {
+    return "Runbook";
+  }
+  return "Page";
+}
+
+function getDocContext(doc: WikiDoc) {
+  const topic = getTopicSlug(doc);
+  if (!topic || topic === "runbooks") {
+    return null;
+  }
+  return titleCase(topic);
 }
 
 function inlineNodes(
@@ -243,7 +338,15 @@ function renderMarkdown(
 
     while (index < lines.length) {
       const next = lines[index].trim();
-      if (!next || next.startsWith("```") || next.startsWith("> ") || next.startsWith("- ") || /^\d+\.\s+/.test(next) || /^#{1,4}\s+/.test(next) || next === "---") {
+      if (
+        !next ||
+        next.startsWith("```") ||
+        next.startsWith("> ") ||
+        next.startsWith("- ") ||
+        /^\d+\.\s+/.test(next) ||
+        /^#{1,4}\s+/.test(next) ||
+        next === "---"
+      ) {
         break;
       }
       paragraph.push(next);
@@ -277,7 +380,7 @@ function buildLocalAnswer(query: string, doc: WikiDoc) {
     .filter((term) => term.length > 2);
 
   if (terms.length === 0 || /summary|summarize|overview|what.*about|gist/.test(query.toLowerCase())) {
-    return `Here’s the short version of "${doc.relPath}":\n\n${doc.excerpt || "This file is short, so the main value is in reading it directly."}`;
+    return `Here’s the short version of "${doc.title}":\n\n${doc.excerpt || "This page is short, so the main value is in reading it directly."}`;
   }
 
   const passages = doc.content
@@ -292,147 +395,39 @@ function buildLocalAnswer(query: string, doc: WikiDoc) {
     .slice(0, 3);
 
   if (matches.length === 0) {
-    return `I couldn't find a direct match for that in ${doc.relPath}. Try terms from the file path or headings in the document.`;
+    return `I couldn't find a direct match for that in ${doc.title}. Try terms from the page title, headings, or tags.`;
   }
 
-  return `From ${doc.relPath}:\n\n${matches
+  return `From ${doc.title}:\n\n${matches
     .map((item) => `- ${item.passage.replace(/\s+/g, " ").slice(0, 260)}`)
     .join("\n")}`;
 }
 
-function buildFileTree(docs: WikiDoc[]) {
-  const root: FileTreeNode = {
-    name: "wiki",
-    path: "wiki",
-    type: "directory",
-    children: [],
-  };
-
-  for (const doc of docs) {
-    const parts = doc.relPath.split("/");
-    let current = root;
-
-    for (let index = 1; index < parts.length; index += 1) {
-      const part = parts[index];
-      const currentPath = parts.slice(0, index + 1).join("/");
-      const isLeaf = index === parts.length - 1;
-
-      if (!current.children) {
-        current.children = [];
-      }
-
-      let node = current.children.find((child) => child.path === currentPath);
-      if (!node) {
-        node = {
-          name: part,
-          path: currentPath,
-          type: isLeaf ? "file" : "directory",
-          children: isLeaf ? undefined : [],
-          doc: isLeaf ? doc : undefined,
-        };
-        current.children.push(node);
-      }
-
-      current = node;
-    }
-  }
-
-  const sortNode = (node: FileTreeNode) => {
-    if (!node.children) {
-      return;
-    }
-
-    node.children.sort((left, right) => {
-      if (left.type !== right.type) {
-        return left.type === "directory" ? -1 : 1;
-      }
-      return left.name.localeCompare(right.name);
-    });
-
-    node.children.forEach(sortNode);
-  };
-
-  sortNode(root);
-  return root;
-}
-
-function nodeMatchesQuery(node: FileTreeNode, query: string): boolean {
-  if (!query) {
+function fileMatchesQuery(doc: WikiDoc, query: string): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) {
     return true;
   }
 
-  const lower = query.toLowerCase();
-  if (node.name.toLowerCase().includes(lower) || node.path.toLowerCase().includes(lower)) {
-    return true;
-  }
-
-  return node.children?.some((child) => nodeMatchesQuery(child, query)) ?? false;
+  return [doc.title, doc.relPath, doc.excerpt, doc.content, doc.rawContent, doc.tags.join(" ")]
+    .join(" ")
+    .toLowerCase()
+    .includes(needle);
 }
 
-function FileTree({
-  node,
-  query,
-  selectedPath,
-  openPaths,
-  onToggle,
-  onSelect,
-}: {
-  node: FileTreeNode;
-  query: string;
-  selectedPath: string;
-  openPaths: Set<string>;
-  onToggle: (path: string) => void;
-  onSelect: (path: string) => void;
-}) {
-  if (!nodeMatchesQuery(node, query)) {
-    return null;
+function sortByTopicOrder(left: string, right: string) {
+  const leftIndex = TOPIC_ORDER.indexOf(left);
+  const rightIndex = TOPIC_ORDER.indexOf(right);
+  if (leftIndex === -1 && rightIndex === -1) {
+    return left.localeCompare(right);
   }
-
-  if (node.type === "file") {
-    return (
-      <button
-        type="button"
-        className={`nav-article ${node.path === selectedPath ? "active" : ""}`}
-        onClick={() => onSelect(node.path)}
-        title={node.path}
-      >
-        {node.name}
-      </button>
-    );
+  if (leftIndex === -1) {
+    return 1;
   }
-
-  const isOpen = openPaths.has(node.path);
-
-  return (
-    <div className={`nav-topic ${isOpen ? "open" : ""}`}>
-      <button type="button" className="nav-topic-header" onClick={() => onToggle(node.path)}>
-        <svg className="nav-topic-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path
-            d="M4.5 2L8.5 6L4.5 10"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span className="nav-topic-label">{node.name}</span>
-      </button>
-
-      <div className="nav-topic-body">
-        {node.children?.map((child) => (
-          <FileTree
-            key={child.path}
-            node={child}
-            query={query}
-            selectedPath={selectedPath}
-            openPaths={openPaths}
-            onToggle={onToggle}
-            onSelect={onSelect}
-          />
-        ))}
-      </div>
-    </div>
-  );
+  if (rightIndex === -1) {
+    return -1;
+  }
+  return leftIndex - rightIndex;
 }
 
 export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
@@ -443,22 +438,12 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [viewMode, setViewMode] = useState<"rendered" | "source">("rendered");
-  const [openPaths, setOpenPaths] = useState<Set<string>>(
-    () =>
-      new Set([
-        "wiki",
-        "wiki/pages",
-        "wiki/pages/runbooks",
-        "wiki/pages/operations",
-        "wiki/pages/performance",
-        "wiki/pages/resilience",
-        "wiki/pages/security",
-      ]),
+  const [openTopics, setOpenTopics] = useState<Set<string>>(
+    () => new Set(["operations", "performance", "resilience"]),
   );
 
   const docsByTitle = useMemo(() => new Map(docs.map((doc) => [doc.title.toLowerCase(), doc])), [docs]);
   const docsByPath = useMemo(() => new Map(docs.map((doc) => [doc.relPath, doc])), [docs]);
-  const fileTree = useMemo(() => buildFileTree(docs), [docs]);
 
   useEffect(() => {
     const applyHash = () => {
@@ -480,11 +465,100 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
       {
         id: `system-${selectedDoc.relPath}`,
         role: "system",
-        content: "New file loaded — chat reset",
+        content: "New wiki page loaded — chat reset",
         time: formatTime(),
       },
     ]);
   }, [selectedDoc.relPath]);
+
+  const startDocs = useMemo(() => {
+    const order = ["wiki/overview.md", "wiki/index.md", "wiki/log.md"];
+    return order
+      .map((path) => docsByPath.get(path))
+      .filter((doc): doc is WikiDoc => Boolean(doc));
+  }, [docsByPath]);
+
+  const runbooks = useMemo(() => {
+    return docs
+      .filter((doc) => getDocKind(doc) === "runbook")
+      .sort((left, right) => left.title.localeCompare(right.title));
+  }, [docs]);
+
+  const topicGroups = useMemo(() => {
+    const groups = new Map<string, TopicGroup>();
+
+    for (const doc of docs) {
+      const kind = getDocKind(doc);
+      const slug = getTopicSlug(doc);
+
+      if (!slug || slug === "runbooks" || (kind !== "topic" && kind !== "note")) {
+        continue;
+      }
+
+      const current = groups.get(slug) ?? {
+        slug,
+        label: getTopicLabel(doc, slug),
+        digest: null,
+        notes: [],
+        sourceCount: 0,
+        summary: "",
+      };
+
+      if (kind === "topic") {
+        current.digest = doc;
+        current.label = getTopicLabel(doc, slug);
+        current.sourceCount = doc.sourceCount ?? current.sourceCount;
+        current.summary = doc.excerpt || current.summary;
+      } else {
+        current.notes.push(doc);
+      }
+
+      groups.set(slug, current);
+    }
+
+    return [...groups.values()]
+      .map((group) => ({
+        ...group,
+        notes: group.notes.sort((left, right) => left.title.localeCompare(right.title)),
+      }))
+      .sort((left, right) => sortByTopicOrder(left.slug, right.slug));
+  }, [docs]);
+
+  const queryText = query.trim().toLowerCase();
+  const matchingDocs = useMemo(() => {
+    if (!queryText) {
+      return [];
+    }
+    return docs.filter((doc) => fileMatchesQuery(doc, queryText));
+  }, [docs, queryText]);
+
+  const searchGroups = useMemo(() => {
+    if (!queryText) {
+      return null;
+    }
+
+    return {
+      core: matchingDocs.filter((doc) => ["overview", "index", "log", "page"].includes(getDocKind(doc))),
+      topics: matchingDocs.filter((doc) => getDocKind(doc) === "topic"),
+      notes: matchingDocs.filter((doc) => getDocKind(doc) === "note"),
+      runbooks: matchingDocs.filter((doc) => getDocKind(doc) === "runbook"),
+    };
+  }, [matchingDocs, queryText]);
+
+  const effectiveOpenTopics = useMemo(() => {
+    if (!queryText) {
+      return openTopics;
+    }
+
+    const matchingSlugs = new Set<string>();
+    for (const doc of matchingDocs) {
+      const slug = getTopicSlug(doc);
+      if (slug && slug !== "runbooks") {
+        matchingSlugs.add(slug);
+      }
+    }
+    return matchingSlugs;
+  }, [matchingDocs, openTopics, queryText]);
 
   const { mainBody, takeaways, seeAlso } = extractSections(selectedDoc.content);
   const relatedNames = [...new Set([...seeAlso, ...selectedDoc.relatedTitles])];
@@ -495,13 +569,13 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
     setSidebarOpen(false);
   };
 
-  const handleTogglePath = (path: string) => {
-    setOpenPaths((current) => {
+  const handleToggleTopic = (slug: string) => {
+    setOpenTopics((current) => {
       const next = new Set(current);
-      if (next.has(path)) {
-        next.delete(path);
+      if (next.has(slug)) {
+        next.delete(slug);
       } else {
-        next.add(path);
+        next.add(slug);
       }
       return next;
     });
@@ -526,6 +600,9 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
     setChatInput("");
   };
 
+  const selectedEyebrow = getDocEyebrow(selectedDoc);
+  const selectedContext = getDocContext(selectedDoc);
+
   return (
     <>
       <div className="topbar">
@@ -539,15 +616,15 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
             <path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
           </svg>
         </button>
-        <span className="topbar-logo">wiki/</span>
+        <span className="topbar-logo">Redis KB</span>
       </div>
 
       <div className={`chat-panel ${chatOpen ? "open" : ""}`} id="chatPanel">
         <div className="chat-panel-header">
           <div className="chat-panel-header-row">
             <div>
-              <div className="chat-panel-header-title">Ask about this file</div>
-              <div className="chat-panel-header-article">{selectedDoc.relPath}</div>
+              <div className="chat-panel-header-title">Ask about this page</div>
+              <div className="chat-panel-header-article">{selectedDoc.title}</div>
             </div>
             <button type="button" className="chat-close-btn" onClick={() => setChatOpen(false)} aria-label="Close chat">
               ×
@@ -567,7 +644,7 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
         <div className="chat-input-area">
           <textarea
             className="chat-textarea"
-            placeholder="Ask a question…"
+            placeholder="Ask a question about this topic…"
             rows={1}
             value={chatInput}
             onChange={(event) => setChatInput(event.target.value)}
@@ -589,7 +666,7 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
         className={`chat-toggle-btn ${chatOpen ? "panel-open" : ""}`}
         onClick={() => setChatOpen((open) => !open)}
       >
-        {chatOpen ? "✕ Close" : "💬 Ask AI"}
+        {chatOpen ? "Close" : "Ask AI"}
       </button>
 
       <div className="layout">
@@ -603,14 +680,14 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
                   <path d="M3 3h4v4H3V3zm6 0h4v4h-4V3zM3 9h4v4H3V9zm6 2h1v1h1v-1h1v-1h-1V9h-1v1H9v1z" fill="white" />
                 </svg>
               </div>
-              <span className="sidebar-logo-text">wiki/</span>
+              <span className="sidebar-logo-text">Redis KB</span>
             </button>
 
             <button
               type="button"
               className="sidebar-pill-link"
               onClick={() => {
-                const logDoc = docs.find((doc) => doc.id === "log");
+                const logDoc = docsByPath.get("wiki/log.md");
                 if (logDoc) {
                   handleSelectDoc(logDoc.relPath);
                 }
@@ -628,7 +705,7 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
               <input
                 className="search-input"
                 type="text"
-                placeholder="Search files..."
+                placeholder="Search topics, notes, runbooks..."
                 autoComplete="off"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -637,27 +714,187 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
           </div>
 
           <nav className="sidebar-nav">
-            <FileTree
-              node={fileTree}
-              query={query}
-              selectedPath={selectedDoc.relPath}
-              openPaths={openPaths}
-              onToggle={handleTogglePath}
-              onSelect={handleSelectDoc}
-            />
+            {queryText ? (
+              <>
+                <div className="nav-search-summary">
+                  {matchingDocs.length} result{matchingDocs.length === 1 ? "" : "s"}
+                </div>
+
+                {searchGroups && searchGroups.core.length > 0 ? (
+                  <>
+                    <div className="nav-section">Start Here</div>
+                    {searchGroups.core.map((doc) => (
+                      <button
+                        key={doc.relPath}
+                        type="button"
+                        className={`nav-home-link ${selectedDoc.relPath === doc.relPath ? "active" : ""}`}
+                        onClick={() => handleSelectDoc(doc.relPath)}
+                      >
+                        <span className="nav-home-label">{doc.title}</span>
+                        <span className="nav-home-meta">{getDocEyebrow(doc)}</span>
+                      </button>
+                    ))}
+                  </>
+                ) : null}
+
+                {searchGroups && searchGroups.topics.length > 0 ? (
+                  <>
+                    <div className="nav-section">Topic Hubs</div>
+                    {searchGroups.topics.map((doc) => (
+                      <button
+                        key={doc.relPath}
+                        type="button"
+                        className={`nav-home-link ${selectedDoc.relPath === doc.relPath ? "active" : ""}`}
+                        onClick={() => handleSelectDoc(doc.relPath)}
+                      >
+                        <span className="nav-home-label">{normalizeDocTitle(doc.title)}</span>
+                        <span className="nav-home-meta">
+                          {doc.sourceCount ? `${doc.sourceCount} sources` : "Topic hub"}
+                        </span>
+                      </button>
+                    ))}
+                  </>
+                ) : null}
+
+                {searchGroups && searchGroups.notes.length > 0 ? (
+                  <>
+                    <div className="nav-section">Operational Notes</div>
+                    {searchGroups.notes.map((doc) => (
+                      <button
+                        key={doc.relPath}
+                        type="button"
+                        className={`nav-home-link ${selectedDoc.relPath === doc.relPath ? "active" : ""}`}
+                        onClick={() => handleSelectDoc(doc.relPath)}
+                      >
+                        <span className="nav-home-label">{doc.title}</span>
+                        <span className="nav-home-meta">{getDocContext(doc) ?? "Note"}</span>
+                      </button>
+                    ))}
+                  </>
+                ) : null}
+
+                {searchGroups && searchGroups.runbooks.length > 0 ? (
+                  <>
+                    <div className="nav-section">Runbooks</div>
+                    {searchGroups.runbooks.map((doc) => (
+                      <button
+                        key={doc.relPath}
+                        type="button"
+                        className={`nav-home-link ${selectedDoc.relPath === doc.relPath ? "active" : ""}`}
+                        onClick={() => handleSelectDoc(doc.relPath)}
+                      >
+                        <span className="nav-home-label">{doc.title}</span>
+                        <span className="nav-home-meta">Runbook</span>
+                      </button>
+                    ))}
+                  </>
+                ) : null}
+
+                {matchingDocs.length === 0 ? <div className="nav-empty">No matching wiki pages.</div> : null}
+              </>
+            ) : (
+              <>
+                <div className="nav-section">Start Here</div>
+                <div className="nav-home-grid">
+                  {startDocs.map((doc) => (
+                    <button
+                      key={doc.relPath}
+                      type="button"
+                      className={`nav-home-card ${selectedDoc.relPath === doc.relPath ? "active" : ""}`}
+                      onClick={() => handleSelectDoc(doc.relPath)}
+                    >
+                      <span className="nav-home-card-kicker">{getDocEyebrow(doc)}</span>
+                      <span className="nav-home-card-title">{doc.title}</span>
+                      <span className="nav-home-card-copy">{doc.excerpt}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="nav-section">Topic Hubs</div>
+                {topicGroups.map((group) => {
+                  const digest = group.digest;
+                  const isSelected = digest ? selectedDoc.relPath === digest.relPath : false;
+                  const isOpen = effectiveOpenTopics.has(group.slug);
+
+                  return (
+                    <div key={group.slug} className={`nav-hub ${isOpen ? "open" : ""}`}>
+                      {digest ? (
+                        <button
+                          type="button"
+                          className={`nav-hub-link ${isSelected ? "active" : ""}`}
+                          onClick={() => handleSelectDoc(digest.relPath)}
+                        >
+                          <span className="nav-hub-main">
+                            <span className="nav-hub-title">{group.label}</span>
+                            <span className="nav-hub-summary">{group.summary}</span>
+                          </span>
+                          <span className="nav-hub-badge">
+                            {group.sourceCount > 0 ? `${group.sourceCount}` : "Hub"}
+                          </span>
+                        </button>
+                      ) : null}
+
+                      {group.notes.length > 0 ? (
+                        <>
+                          <button type="button" className="nav-hub-toggle" onClick={() => handleToggleTopic(group.slug)}>
+                            <span>Supporting pages</span>
+                            <span className={`nav-hub-chevron ${isOpen ? "open" : ""}`}>›</span>
+                          </button>
+
+                          {isOpen ? (
+                            <div className="nav-hub-body">
+                              {group.notes.map((note) => (
+                                <button
+                                  key={note.relPath}
+                                  type="button"
+                                  className={`nav-article ${selectedDoc.relPath === note.relPath ? "active" : ""}`}
+                                  onClick={() => handleSelectDoc(note.relPath)}
+                                >
+                                  {note.title}
+                                </button>
+                              ))}
+                            </div>
+                          ) : null}
+                        </>
+                      ) : null}
+                    </div>
+                  );
+                })}
+
+                <div className="nav-section">Runbooks</div>
+                {runbooks.map((doc) => (
+                  <button
+                    key={doc.relPath}
+                    type="button"
+                    className={`nav-home-link ${selectedDoc.relPath === doc.relPath ? "active" : ""}`}
+                    onClick={() => handleSelectDoc(doc.relPath)}
+                  >
+                    <span className="nav-home-label">{doc.title}</span>
+                    <span className="nav-home-meta">Runbook</span>
+                  </button>
+                ))}
+              </>
+            )}
           </nav>
         </aside>
 
         <main className={`main ${chatOpen ? "chat-open" : ""}`} id="mainContent">
           <div className="content-wrap">
             <div className="article-header">
-              {selectedDoc.tags.length > 0 || selectedDoc.lastUpdated ? (
+              <div className="article-kicker-row">
+                <span className="article-kicker">{selectedEyebrow}</span>
+                {selectedContext ? <span className="article-kicker-divider">/</span> : null}
+                {selectedContext ? <span className="article-kicker-context">{selectedContext}</span> : null}
+              </div>
+
+              {selectedDoc.tags.length > 0 || selectedDoc.lastUpdated || selectedDoc.sourceCount ? (
                 <div className="article-meta">
                   {selectedDoc.tags.map((tag) => (
                     <span key={tag} className="tag">
                       {tag}
                     </span>
                   ))}
+                  {selectedDoc.sourceCount ? <span className="article-count">{selectedDoc.sourceCount} sources</span> : null}
                   {selectedDoc.lastUpdated ? <span className="article-date">Updated {selectedDoc.lastUpdated}</span> : null}
                 </div>
               ) : null}
@@ -727,7 +964,7 @@ export function WikiBrowser({ docs, initialSelectedPath }: WikiBrowserProps) {
                                   <path d="M2 3h10v8H2V3zm2 2h6M4 7h4" stroke="#0075de" strokeWidth="1.25" strokeLinecap="round" />
                                 </svg>
                               </div>
-                              <span>{article?.relPath ?? cleanName}</span>
+                              <span>{article?.title ?? cleanName}</span>
                             </button>
                           );
                         })}

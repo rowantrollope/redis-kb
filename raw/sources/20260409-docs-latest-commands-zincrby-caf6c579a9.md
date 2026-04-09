@@ -1,0 +1,71 @@
+---
+title: ZINCRBY
+url: https://redis.io/docs/latest/commands/zincrby/
+retrieved_utc: '2026-04-09T20:45:38.479472+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/commands/zincrby/index.html.md
+---
+
+# ZINCRBY
+
+```json metadata
+{
+  "title": "ZINCRBY",
+  "description": "Increments the score of a member in a sorted set.",
+  "categories": ["docs","develop","stack","oss","rs","rc","oss","kubernetes","clients"],
+  "arguments": [{"display_text":"key","key_spec_index":0,"name":"key","type":"key"},{"display_text":"increment","name":"increment","type":"integer"},{"display_text":"member","name":"member","type":"string"}],
+  "syntax_fmt": "ZINCRBY key increment member",
+  "complexity": "O(log(N)) where N is the number of elements in the sorted set.",
+  "group": "sorted-set",
+  "command_flags": ["write","denyoom","fast"],
+  "acl_categories": ["@write","@sortedset","@fast"],
+  "since": "1.2.0",
+  "arity": 4,
+  "key_specs": [{"RW":true,"access":true,"begin_search":{"spec":{"index":1},"type":"index"},"find_keys":{"spec":{"keystep":1,"lastkey":0,"limit":0},"type":"range"},"update":true}],
+  "tableOfContents": {"sections":[{"id":"examples","title":"Examples"},{"id":"redis-software-and-redis-cloud-compatibility","title":"Redis Software and Redis Cloud compatibility"},{"id":"return-information","title":"Return information"}]}
+
+,
+  "codeExamples": []
+}
+```Increments the score of `member` in the sorted set stored at `key` by
+`increment`.
+If `member` does not exist in the sorted set, it is added with `increment` as
+its score (as if its previous score was `0.0`).
+If `key` does not exist, a new sorted set with the specified `member` as its
+sole member is created.
+
+An error is returned when `key` exists but does not hold a sorted set.
+
+The `score` value should be the string representation of a numeric value, and
+accepts double precision floating point numbers.
+It is possible to provide a negative value to decrement the score.
+
+## Examples
+
+
+ZADD myzset 1 "one"
+ZADD myzset 2 "two"
+ZINCRBY myzset 2 "one"
+ZRANGE myzset 0 -1 WITHSCORES
+
+
+## Redis Software and Redis Cloud compatibility
+
+| Redis<br />Software | Redis<br />Cloud | <span style="min-width: 9em; display: table-cell">Notes</span> |
+|:----------------------|:-----------------|:------|
+| <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> | <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> |  |
+
+## Return information
+
+**RESP2:**
+
+[Bulk string reply](../../develop/reference/protocol-spec#bulk-strings): the new score of _member_ as a double precision floating point number.
+
+**RESP3:**
+
+[Double reply](../../develop/reference/protocol-spec#doubles): the new score of _member_.
+
+

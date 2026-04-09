@@ -2,7 +2,7 @@
 title: "Redis SRE Knowledge Base Overview"
 last_updated: 2026-04-09
 tags: [overview, redis, sre]
-source_count: 3
+source_count: 2324
 ---
 
 # Redis SRE Knowledge Base
@@ -10,10 +10,14 @@ source_count: 3
 This wiki is intended to support a future `redis-sre-agent` by keeping durable operational knowledge.
 
 ## Coverage snapshot
-- **operations**: 1 source-backed sections.
-- **performance**: 2 source-backed sections.
-- **resilience**: 1 source-backed sections.
-- **security**: 1 source-backed sections.
+- **cluster**: 1009 source-backed sections.
+- **operations**: 143 source-backed sections.
+- **performance**: 407 source-backed sections.
+- **persistence**: 511 source-backed sections.
+- **resilience**: 1947 source-backed sections.
+- **security**: 1176 source-backed sections.
+- **sentinels**: 239 source-backed sections.
+- **troubleshooting**: 1018 source-backed sections.
 
 ## Workflow
 1. Add/refresh sources in `raw/source_catalog.yaml`.

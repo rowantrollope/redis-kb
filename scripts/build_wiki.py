@@ -5,8 +5,9 @@ from __future__ import annotations
 
 import datetime as dt
 import pathlib
-import re
 from collections import defaultdict
+
+import yaml
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RAW_SOURCES = ROOT / "raw" / "sources"
@@ -31,13 +32,16 @@ def read_sources() -> list[pathlib.Path]:
     return sorted(RAW_SOURCES.glob("*.md"))
 
 
-def extract_body(path: pathlib.Path) -> str:
+def parse_source(path: pathlib.Path) -> tuple[str, str, list[str]]:
     text = path.read_text(errors="ignore")
     if text.startswith("---"):
         parts = text.split("---", 2)
         if len(parts) == 3:
-            return parts[2]
-    return text
+            metadata = yaml.safe_load(parts[1]) or {}
+            title = metadata.get("title") or path.stem
+            tags = metadata.get("tags") or []
+            return title, parts[2], tags
+    return path.stem, text, []
 
 
 def classify(text: str) -> set[str]:
@@ -53,8 +57,14 @@ def classify(text: str) -> set[str]:
 
 def summarize(text: str, max_lines: int = 12) -> list[str]:
     lines = []
+    in_code_block = False
     for raw in text.splitlines():
         line = raw.strip()
+        if line.startswith("```"):
+            in_code_block = not in_code_block
+            continue
+        if in_code_block:
+            continue
         if len(line) < 40:
             continue
         if line.startswith(("#", "-", "`")):
@@ -162,10 +172,10 @@ def main() -> None:
     topic_map: dict[str, list[tuple[str, pathlib.Path, list[str]]]] = defaultdict(list)
 
     for path in sources:
-        body = extract_body(path)
-        title = path.stem
+        title, body, tags = parse_source(path)
         top_points = summarize(body)
-        for topic in classify(body):
+        text_for_classification = "\n".join([title, " ".join(tags), body])
+        for topic in classify(text_for_classification):
             topic_map[topic].append((title, path, top_points))
 
     write_topic_pages(topic_map)

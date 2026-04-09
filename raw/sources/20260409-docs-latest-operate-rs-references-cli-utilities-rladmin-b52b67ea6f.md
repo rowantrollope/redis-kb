@@ -1,0 +1,54 @@
+---
+title: rladmin
+url: https://redis.io/docs/latest/operate/rs/references/cli-utilities/rladmin/
+retrieved_utc: '2026-04-09T20:46:07.079707+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/rs/references/cli-utilities/rladmin/index.html.md
+---
+
+# rladmin
+
+```json metadata
+{
+  "title": "rladmin",
+  "description": "Manage Redis Software clusters and databases.",
+  "categories": ["docs","operate","rs"],
+  "tableOfContents": {"sections":[{"id":"rladmin-commands","title":"rladmin commands"},{"id":"use-the-rladmin-shell","title":"Use the rladmin shell"}]}
+
+,
+  "codeExamples": []
+}
+```
+`rladmin` is a command-line utility that lets you perform administrative tasks such as failover, migration, and endpoint binding on a Redis Software cluster. You can also use `rladmin` to edit cluster and database configurations.
+
+Although you can use the Cluster Manager UI for some of these tasks, others are unique to the `rladmin` command-line tool.
+
+## `rladmin` commands
+
+
+
+## Use the `rladmin` shell
+
+To open the `rladmin` shell:
+
+1. Sign in to a Redis Software node with an account that is a member of the **redislabs** group.
+
+    The `rladmin` binary is located in `/opt/redislabs/bin`. If you don't have this directory in your `PATH`, you may want to add it. Otherwise, you can use `bash -l <username>` to sign in as a user with permissions for that directory.
+
+1. Run: `rladmin`
+
+    
+If the CLI does not recognize the `rladmin` command,
+run this command to load the necessary configuration first: <nobr>`bash -l`</nobr>
+    
+
+In the `rladmin` shell, you can:
+
+- Run any `rladmin` command without prefacing it with `rladmin`.
+- Enter `?` to view the full list of available commands.
+- Enter [`help`]() followed by the name of a command for a detailed explanation of the command and its usage.
+- Press the `Tab` key for command completion.
+- Enter `exit` or press `Control+D` to exit the `rladmin` shell and return to the terminal prompt.

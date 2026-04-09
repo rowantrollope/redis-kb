@@ -1,0 +1,71 @@
+---
+title: LocalAccumulateBy
+url: https://redis.io/docs/latest/operate/oss_and_stack/stack-with-enterprise/gears-v1/jvm/classes/gearsbuilder/localaccumulateby/
+retrieved_utc: '2026-04-09T20:45:58.014582+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/oss_and_stack/stack-with-enterprise/gears-v1/jvm/classes/gearsbuilder/localaccumulateby/index.html.md
+---
+
+# LocalAccumulateBy
+
+```json metadata
+{
+  "title": "LocalAccumulateBy",
+  "description": "Groups records and reduces each group to a single record per group locally on each shard.",
+  "categories": ["docs","operate","stack"],
+  "tableOfContents": {"sections":[{"id":"parameters","title":"Parameters"},{"id":"returns","title":"Returns"},{"id":"example","title":"Example"}]}
+
+,
+  "codeExamples": []
+}
+```
+```java
+public <I extends java.io.Serializable> GearsBuilder<I> localAccumulateByâ(
+	gears.operations.ExtractorOperation<T> extractor, 
+	gears.operations.AccumulateByOperation<T,âI> accumulator)
+```
+
+The `localAccumulateBy` function is similar to [`accumulateBy`](), except it performs the operation locally on each shard without moving data between shards.
+
+On each shard, it iterates through the records in the pipe, groups them based on the provided extractor, and then reduces each group to a single record per group with the accumulator function.
+
+The initial value of the accumulator is null.
+
+## Parameters
+ 
+Type parameters:
+
+| Name | Description |
+|------|-------------|
+| I | The template type of the returned builder |
+
+Function parameters:
+
+| Name | Type | Description |
+|------|------|-------------|
+| accumulator | <nobr>AccumulateByOperation<T,âI></nobr> | A function with logic to update the accumulator value with each record |
+| extractor | ExtractorOperation<T> | Extracts a specific value from each record |
+
+## Returns
+
+Returns a GearsBuilder object with a new template type.
+
+## Example
+
+```java
+GearsBuilder.CreateGearsBuilder(reader).
+   	localAccumulateBy(r->{
+   		return r.getStringVal();
+   	},(k, a, r)->{
+   		Integer ret = null;
+   		if(a == null) {
+   			ret = 0;
+   		}else {
+   			ret = (Integer)a;
+   		}
+   		return ret + 1;
+});
+```

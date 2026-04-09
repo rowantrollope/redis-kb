@@ -1,0 +1,54 @@
+---
+title: DISCARD
+url: https://redis.io/docs/latest/commands/discard/
+retrieved_utc: '2026-04-09T20:46:03.751700+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/commands/discard/index.html.md
+---
+
+# DISCARD
+
+```json metadata
+{
+  "title": "DISCARD",
+  "description": "Discards a transaction.",
+  "categories": ["docs","develop","stack","oss","rs","rc","oss","kubernetes","clients"],
+  "syntax_fmt": "DISCARD",
+  "complexity": "O(N), when N is the number of queued commands",
+  "group": "transactions",
+  "command_flags": ["noscript","loading","stale","fast","allow_busy"],
+  "acl_categories": ["@fast","@transaction"],
+  "since": "2.0.0",
+  "arity": 1,
+  "tableOfContents": {"sections":[{"id":"redis-software-and-redis-cloud-compatibility","title":"Redis Software and Redis Cloud compatibility"},{"id":"return-information","title":"Return information"}]}
+
+,
+  "codeExamples": []
+}
+```Flushes all previously queued commands in a [transaction][tt] and restores the
+connection state to normal.
+
+[tt]: /develop/interact/transactions
+
+If [`WATCH`]() was used, `DISCARD` unwatches all keys watched by the connection.
+
+## Redis Software and Redis Cloud compatibility
+
+| Redis<br />Software | Redis<br />Cloud | <span style="min-width: 9em; display: table-cell">Notes</span> |
+|:----------------------|:-----------------|:------|
+| <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> | <span title="Supported">&#x2705; Standard</span><br /><span title="Supported"><nobr>&#x2705; Active-Active</nobr></span> |  |
+
+## Return information
+
+**RESP2:**
+
+[Simple string reply](../../develop/reference/protocol-spec#simple-strings): `OK`.
+
+**RESP3:**
+
+[Simple string reply](../../develop/reference/protocol-spec#simple-strings): `OK`.
+
+

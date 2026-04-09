@@ -1,0 +1,82 @@
+---
+title: Redis Enterprise Software release notes 6.4.2-81 (June 2023)
+url: https://redis.io/docs/latest/operate/rs/release-notes/rs-6-4-2-releases/rs-6-4-2-81/
+retrieved_utc: '2026-04-09T20:45:59.003002+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/rs/release-notes/rs-6-4-2-releases/rs-6-4-2-81/index.html.md
+---
+
+# Redis Enterprise Software release notes 6.4.2-81 (June 2023)
+
+```json metadata
+{
+  "title": "Redis Enterprise Software release notes 6.4.2-81 (June 2023)",
+  "description": "Email alerts for database backup failures and replica high availability shard relocation failures.",
+  "categories": ["docs","operate","rs"],
+  "tableOfContents": {"sections":[{"id":"new-features-and-enhancements","title":"New features and enhancements"},{"id":"resolved-issues","title":"Resolved issues"},{"children":[{"id":"feature-limitations","title":"Feature limitations"},{"id":"operating-system-limitations","title":"Operating system limitations"}],"id":"known-limitations","title":"Known limitations"}]}
+
+,
+  "codeExamples": []
+}
+```
+This is a maintenance release for â[âRedis Enterprise Software version 6.4.2](https://redis.io/downloads/#software).
+
+The following table shows the MD5 checksums for the available packages:
+
+| Package | MD5 checksum (6.4.2-81 June release) |
+|---------|---------------------------------------|
+| Ubuntu 16 | 31631248672de0154ec20aee0bff9adc |
+| Ubuntu 18 | eb4e8c1bc1443923ebcd457e51684f7e |
+| Ubuntu 20 | 1256292b8dca6456e69dc309be51a8d0 |
+| RedHat Enterprise Linux (RHEL) 7<br/>Oracle Enterprise Linux (OL) 7 | 1e51c5fdf22c0b6988565444ba08c6cd |
+| RedHat Enterprise Linux (RHEL) 8<br/>Oracle Enterprise Linux (OL) 8 <br/>Rocky Enterprise Linux | 96dc036339fe18fb218e8d4c8ff50c99 |
+| Amazon Linux 2 | 1a549bdb360c9e22ef764faeadbd4c90 |
+
+## New features and enhancements
+
+- RS77279 - Database backup failures and replica high availability ([replica HA]()) failures (for example, when relocating a shard from a node) now generate email alerts
+
+#### Redis Stack v6.2.6
+
+Redis Enterprise Software v6.4.2 includes the new features delivered in the latest [Redis Stack release (6.2.6 v6)](https://redis.com/blog/introducing-redis-stack-6-2-6-and-7-0-6/):
+
+- [RediSearch v2.6.9]()
+
+- [RedisJSON v2.4.7]()
+
+- [RedisBloom v2.4.5]()
+
+- [RedisGraph v2.10.9]()
+
+- [RedisTimeSeries v1.8.10]()
+
+See [Upgrade modules]() to learn how to upgrade a module for a database.
+
+## Resolved issues
+
+- RS101204 - Fixed high memory consumption that was caused by the `persistence_mgr` service when AOF persistence is configured for every second.
+
+- RS39322 , RS35526  - [`rlcheck`]() no longer requires root privileges and can run with the `redislabs` group and user.
+
+- RS97315, RS100853  - Fixed the robustness of the support package process when collecting the shard configuration.
+
+- RS65110 - Fixed firewalld SELinux configuration.
+
+- RS101691 - Clean false error messages at the end of installation. 
+
+## Known limitations
+
+### Feature limitations
+
+- RS78430 - When [tuning module arguments](), typos or unsupported arguments can cause shards to get stuck after restarting.
+
+- RS40641 - API requests are redirected to an internal IP in case the request arrives from a node which is not the master. To avoid this issue, use [`rladmin cluster config`]() to configure `handle_redirects` or `handle_metrics_redirects`.
+
+### Operating system limitations
+
+#### Ubuntu 20.04
+
+By default, you cannot use the SHA1 hash algorithm ([OpenSSLâs default security level is set to 2](https://manpages.ubuntu.com/manpages/focal/man3/SSL_CTX_set_security_level.3ssl.html#notes)). The operating system will reject SHA1 certificates even if the `mtls_allow_weak_hashing` option is enabled. You need to replace SHA1 certificates with newer certificates that use SHA-256. Note that the certificates provided with Redis Enterprise Software use SHA-256.

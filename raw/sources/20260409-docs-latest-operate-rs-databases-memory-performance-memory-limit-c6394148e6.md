@@ -1,0 +1,137 @@
+---
+title: Database memory limits
+url: https://redis.io/docs/latest/operate/rs/databases/memory-performance/memory-limit/
+retrieved_utc: '2026-04-09T20:45:55.606694+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/operate/rs/databases/memory-performance/memory-limit/index.html.md
+---
+
+# Database memory limits
+
+```json metadata
+{
+  "title": "Database memory limits",
+  "description": "When you set a database's memory limit, you define the maximum size the database can reach.",
+  "categories": ["docs","operate","rs","rc"],
+  "tableOfContents": {"sections":[{"id":"factors-for-sizing","title":"Factors for sizing"},{"children":[{"id":"order-of-events-for-low-ram","title":"Order of events for low RAM"}],"id":"what-happens-when-redis-software-is-low-on-ram","title":"What happens when Redis Software is low on RAM?"},{"id":"adaptive-memory-allocation","title":"Adaptive memory allocation"},{"children":[{"id":"resharding-overview","title":"Resharding overview"},{"id":"resharding-duration-factors","title":"Resharding duration factors"}],"id":"resharding-duration-factors","title":"Resharding duration factors"},{"id":"memory-metrics","title":"Memory metrics"},{"id":"related-info","title":"Related info"}]}
+
+,
+  "codeExamples": []
+}
+```When you set a database's memory limit, you define the maximum size the
+database can reach in the cluster, across all database replicas and
+shards, including both primary and replica shards.
+
+If the total size of the database in the cluster reaches the memory
+limit, the data eviction policy is
+applied.
+
+## Factors for sizing
+
+Factors to consider when sizing your database:
+
+- **dataset size**: you want your limit to be above your dataset size to leave room for overhead.
+- **database throughput**: high throughput needs more shards, leading to a higher memory limit.
+- [**modules**](): using modules with your database consumes more memory.
+- [**database clustering**](): enables you to spread your data into shards across multiple nodes.
+- [**database replication**](): enabling replication doubles memory consumption.
+
+Additional factors for Active-Active databases:
+
+- [**Active-Active replication**](): enabling Active-Active replication requires double the memory of regular replication, which can be up to two times (2x) the original data size per instance.
+- [**database replication backlog**]() for synchronization between shards. By default, this is set to 1% of the database size.
+- [**Active-Active replication backlog**]() for synchronization between clusters. By default, this is set to 1% of the database size.
+
+  It's also important to know Active-Active databases have a lower threshold for activating the eviction policy, because it requires propagation to all participating clusters. The eviction policy starts to evict keys when one of the Active-Active instances reaches 80% of its memory limit.
+
+Additional factors for  databases with Auto Tiering enabled:
+
+- The available flash space must be greater than or equal to the total database size (RAM+Flash). The extra space accounts for write buffers and [write amplification](https://en.wikipedia.org/wiki/Write_amplification).
+
+- [**database persistence**](): Auto Tiering uses dual database persistence where both the primary and replica shards persist to disk. This may add some processor and network overhead, especially in cloud configurations with network attached storage.
+
+## What happens when Redis Software is low on RAM?
+
+Redis SoftwareÂ manages node memory so that data is entirely in RAM (unless using Auto Tiering). If not enough RAM is available, Redis SoftwareÂ prevents adding more data into the databases.
+
+Redis SoftwareÂ protects the existing data and prevents the database from being able to store data into the shards.
+
+You can configure the cluster to moveÂ the data to another node, or even discard it according to the [eviction policy]() set on each database by the administrator.
+
+[Redis Flex and Auto Tiering]()
+manage memory so that you can also use flash memory (SSD) to store data.
+
+### Order of events for low RAM
+
+1. If there are other nodes available, your shards migrate to other nodes.
+2. If the eviction policy allows eviction, shards start to release memory,
+which can result in data loss.
+3. If the eviction policy does not allow eviction, you'll receive
+out of memory (OOM) messages.
+4. If shards can't free memory, Redis SoftwareÂ relies on the OS processes to stop replicas,
+but tries to avoid stopping primary shards.
+
+We recommend that you have a [monitoring platform]() that alerts you before a system gets low on RAM.
+You must maintain sufficient free memory to make sure that you have a healthy Redis SoftwareÂ installation.
+
+## Adaptive memory allocation
+
+In rare cases during high-velocity data ingestion, databases can temporarily reach up to 200% of their configured memory limit. This adaptive memory allocation strategy allows large amounts of data to be written to the database quickly without rejecting valid transactions.
+
+For example, when pushing data at approximately 100 MB/sec into a 2 GB database:
+- A database with 2 shards could reach 199% of its configured memory limit.
+- A database with 4 shards could reach around 220% of its configured memory limit.
+
+Databases should return to their configured memory limits after data is removed according to the [eviction policy]() and [time-to-live (TTL)]().
+
+If you observe this behavior, consider [monitoring]() memory usage and controlling the traffic load on the application side.
+
+## Resharding duration factors
+
+Resharding enables you to increase database capacity by adding shards and utilizing more cluster memory. Understanding resharding duration helps you plan maintenance operations and minimize database risk.
+
+### Resharding overview
+
+Resharding follows a three-stage process for each new shard:
+
+1. **Shard creation**: Creates a new shard and performs partial synchronization based on assigned hash slots
+2. **Key trimming**: Removes keys from the original shard according to new hash slot assignments
+3. **Defragmentation**: Executes failovers to optimize new shard performance
+
+When resharding multiple shards (for example, expanding from 4 to 8 shards), this process runs serially for each new shard. The operation completes only after all stages finish for every shard.
+
+
+Resharding is an atomic operation that cannot be interrupted. Database corruption can occur if the process fails or stops unexpectedly. Minimizing resharding time reduces this risk.
+
+
+### Resharding duration factors
+
+Resharding duration increases linearly with the number of keys in your database. Key length and network traffic affect resharding duration:
+
+Key length directly affects resharding duration. Longer keys (2000 KB) require more time to process due to increased hash calculation overhead per key compared to short keys (10 bytes). 
+
+Network traffic has a measurable but limited effect on resharding duration. Since resharding operations typically don't reach CPU limits, the impact on both resharding time and ongoing traffic remains minimal.
+
+## Memory metrics
+
+The Cluster Manager UI provides metrics that can help you evaluate your memory use.
+
+- Free RAM
+- RAM fragmentation
+- Used memory
+- Memory usage
+- Memory limit
+
+See [console metrics]() for more detailed information.
+
+## Related info
+
+- [Memory and performance]()
+- [Disk sizing for heavy write scenarios]()
+- [Turn off services to free system memory]()
+- [Eviction policy]()
+- [Shard placement policy]()
+- [Database persistence]()

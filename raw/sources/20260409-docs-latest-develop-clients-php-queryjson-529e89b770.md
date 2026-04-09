@@ -1,0 +1,481 @@
+---
+title: Index and query documents
+url: https://redis.io/docs/latest/develop/clients/php/queryjson/
+retrieved_utc: '2026-04-09T20:45:55.541787+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/develop/clients/php/queryjson/index.html.md
+---
+
+# Index and query documents
+
+```json metadata
+{
+  "title": "Index and query documents",
+  "description": "Learn how to use Redis Search with JSON and hash documents.",
+  "categories": ["docs","develop","stack","oss","rs","rc","oss","kubernetes","clients"],
+  "topics": ["Redis Search","JSON","hash"],
+  "relatedPages": ["/develop/clients/php/vecsearch","/develop/ai/search-and-query"],
+  "scope": "example",
+  "tableOfContents": {"sections":[{"id":"initialize","title":"Initialize"},{"id":"create-data","title":"Create data"},{"id":"add-the-index","title":"Add the index"},{"id":"add-the-data","title":"Add the data"},{"id":"query-the-data","title":"Query the data"},{"id":"differences-with-hash-documents","title":"Differences with hash documents"},{"id":"more-information","title":"More information"}]}
+
+,
+  "codeExamples": [{"codetabsId":"php_home_json-stepimport","description":"Foundational: Import required dependencies for Redis Search and JSON operations","difficulty":"beginner","id":"import","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepimport"}]},{"codetabsId":"php_home_json-stepcreate_data","description":"Foundational: Create sample JSON data structures for indexing and querying","difficulty":"beginner","id":"create_data","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepcreate_data"}]},{"codetabsId":"php_home_json-stepconnect","description":"Foundational: Connect to a Redis server and establish a client connection","difficulty":"beginner","id":"connect","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepconnect"}]},{"codetabsId":"php_home_json-stepmake_index","description":"Foundational: Create a search index for JSON documents with field schema and prefix filtering","difficulty":"intermediate","id":"make_index","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepmake_index"}]},{"codetabsId":"php_home_json-stepadd_data","description":"Foundational: Store JSON documents with indexed key prefixes for automatic indexing","difficulty":"beginner","id":"add_data","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepadd_data"}]},{"codetabsId":"php_home_json-stepquery1","description":"Query data: Execute full-text and range queries on indexed JSON documents using FT.SEARCH","difficulty":"intermediate","id":"query1","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepquery1"}]},{"codetabsId":"php_home_json-stepquery2","description":"Restrict query results: Use query options to return specific fields from search results","difficulty":"intermediate","id":"query2","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepquery2"}]},{"codetabsId":"php_home_json-stepquery3","description":"Aggregation: Use aggregation queries to group and count results from indexed documents","difficulty":"advanced","id":"query3","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepquery3"}]},{"codetabsId":"php_home_json-stepmake_hash_index","description":"Foundational: Create a search index for hash documents with HASH type specification","difficulty":"intermediate","id":"make_hash_index","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepmake_hash_index"}]},{"codetabsId":"php_home_json-stepadd_hash_data","description":"Foundational: Store hash documents using HSET for indexed retrieval","difficulty":"beginner","id":"add_hash_data","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepadd_hash_data"}]},{"codetabsId":"php_home_json-stepquery1_hash","description":"Query data: Query hash documents using the same search syntax as JSON with different result formatting","difficulty":"intermediate","id":"query1_hash","languages":[{"clientId":"predis","clientName":"Predis","id":"PHP","langId":"php","panelId":"panel_PHP_php_home_json-stepquery1_hash"}]}]
+}
+```## Code Examples Legend
+
+The code examples below show how to perform the same operations in different programming languages and client libraries:
+
+- **Redis CLI**: Command-line interface for Redis
+- **C# (Synchronous)**: StackExchange.Redis synchronous client
+- **C# (Asynchronous)**: StackExchange.Redis asynchronous client
+- **Go**: go-redis client
+- **Java (Synchronous - Jedis)**: Jedis synchronous client
+- **Java (Asynchronous - Lettuce)**: Lettuce asynchronous client
+- **Java (Reactive - Lettuce)**: Lettuce reactive/streaming client
+- **JavaScript (Node.js)**: node-redis client
+- **PHP**: Predis client
+- **Python**: redis-py client
+- **Rust (Synchronous)**: redis-rs synchronous client
+- **Rust (Asynchronous)**: redis-rs asynchronous client
+
+Each code example demonstrates the same basic operation across different languages. The specific syntax and patterns vary based on the language and client library, but the underlying Redis commands and behavior remain consistent.
+
+---
+
+
+This example shows how to create a
+[search index]()
+for [JSON]() documents and
+run queries against the index. It then goes on to show the slight differences
+in the equivalent code for [hash]()
+documents.
+
+From [v3.0.0](https://github.com/predis/predis/releases/tag/v3.0.0) onwards,
+`Predis` uses query dialect 2 by default.
+Redis Search methods such as [`ftSearch()`]()
+will explicitly request this dialect, overriding the default set for the server.
+See
+[Query dialects]()
+for more information.
+
+
+## Initialize
+
+Make sure that you have [Redis Open Source]()
+or another Redis server available. Also install the
+[`Predis`]() client library if you
+haven't already done so.
+
+Add the following dependencies:
+
+#### Code Examples
+
+Foundational: Import required dependencies for Redis Search and JSON operations
+
+**Difficulty:** Beginner
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+<?php
+
+require 'vendor/autoload.php';
+
+use Predis\Client as PredisClient;
+
+use Predis\Command\Argument\Search\AggregateArguments;
+use Predis\Command\Argument\Search\CreateArguments;
+use Predis\Command\Argument\Search\SearchArguments;
+use Predis\Command\Argument\Search\SchemaFields\NumericField;
+use Predis\Command\Argument\Search\SchemaFields\TextField;
+use Predis\Command\Argument\Search\SchemaFields\TagField;
+```
+
+
+
+## Create data
+
+Create some test data to add to your database:
+
+#### Code Examples
+
+Foundational: Create sample JSON data structures for indexing and querying
+
+**Difficulty:** Beginner
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $user1 = json_encode([
+            'name' => 'Paul John',
+            'email' => 'paul.john@example.com',
+            'age' => 42,
+            'city' => 'London',
+        ], JSON_THROW_ON_ERROR);
+        
+        $user2 = json_encode([
+            'name' => 'Eden Zamir',
+            'email' => 'eden.zamir@example.com',
+            'age' => 29,
+            'city' => 'Tel Aviv',
+        ], JSON_THROW_ON_ERROR);
+        
+        $user3 = json_encode([
+            'name' => 'Paul Zamir',
+            'email' => 'paul.zamir@example.com',
+            'age' => 35,
+            'city' => 'Tel Aviv',
+        ], JSON_THROW_ON_ERROR);
+```
+
+
+
+## Add the index
+
+Connect to your Redis database. The code below shows the most
+basic connection but see
+[Connect to the server]()
+to learn more about the available connection options.
+
+#### Code Examples
+
+Foundational: Connect to a Redis server and establish a client connection
+
+**Difficulty:** Beginner
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $r = new PredisClient([
+            'scheme'   => 'tcp',
+            'host'     => '127.0.0.1',
+            'port'     => 6379,
+            'password' => '',
+            'database' => 0,
+        ]);
+```
+
+
+
+Create an
+[index]().
+In this example, only JSON documents with the key prefix `user:` are indexed.
+For more information, see
+[Query syntax]().
+
+#### Code Examples
+
+Foundational: Create a search index for JSON documents with field schema and prefix filtering
+
+**Difficulty:** Intermediate
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $schema = [
+            new TextField('$.name', 'name'),
+            new TagField('$.city', 'city'),
+            new NumericField('$.age', "age"),
+        ];
+        
+        try {
+        $r->ftCreate("idx:users", $schema,
+            (new CreateArguments())
+                ->on('JSON')
+                ->prefix(["user:"]));
+        }
+        catch (Exception $e) {
+            echo $e->getMessage(), PHP_EOL;
+        }
+```
+
+
+
+## Add the data
+
+Add the three sets of user data to the database as
+[JSON]() objects.
+If you use keys with the `user:` prefix then Redis will index the
+objects automatically as you add them:
+
+#### Code Examples
+
+Foundational: Store JSON documents with indexed key prefixes for automatic indexing
+
+**Difficulty:** Beginner
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $r->jsonset('user:1', '$', $user1);
+        $r->jsonset('user:2', '$', $user2);
+        $r->jsonset('user:3', '$', $user3);
+```
+
+
+
+## Query the data
+
+You can now use the index to search the JSON objects. The
+[query]()
+below searches for objects that have the text "Paul" in any field
+and have an `age` value in the range 30 to 40:
+
+#### Code Examples
+
+Query data: Execute full-text and range queries on indexed JSON documents using FT.SEARCH
+
+**Difficulty:** Intermediate
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $res = $r->ftSearch("idx:users", "Paul @age:[30 40]");
+        echo json_encode($res), PHP_EOL;
+        // >>> [1,"user:3",["$","{\"name\":\"Paul Zamir\",\"email\":\"paul.zamir@example.com\",\"age\":35,\"city\":\"London\"}"]]
+```
+
+
+
+Specify query options to return only the `city` field:
+
+#### Code Examples
+
+Restrict query results: Use query options to return specific fields from search results
+
+**Difficulty:** Intermediate
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $arguments = new SearchArguments();
+        $arguments->addReturn(3, '$.city', true, 'thecity');
+        $arguments->dialect(2);
+        $arguments->limit(0, 5);
+
+        $res = $r->ftSearch("idx:users", "Paul", $arguments);
+
+        echo json_encode($res), PHP_EOL;
+        // >>> [2,"user:1",["thecity","London"],"user:3",["thecity","Tel Aviv"]]
+```
+
+
+
+Use an
+[aggregation query]()
+to count all users in each city.
+
+#### Code Examples
+
+Aggregation: Use aggregation queries to group and count results from indexed documents
+
+**Difficulty:** Advanced
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $ftAggregateArguments = (new AggregateArguments())
+            ->groupBy('@city')
+            ->reduce('COUNT', true, 'count');
+
+        $res = $r->ftAggregate('idx:users', '*', $ftAggregateArguments);
+        echo json_encode($res), PHP_EOL;
+        // >>> [2,["city","London","count","1"],["city","Tel Aviv","count","2"]]
+```
+
+
+
+## Differences with hash documents
+
+Indexing for hash documents is very similar to JSON indexing but you
+need to specify some slightly different options.
+
+When you create the schema for a hash index, you don't need to
+add aliases for the fields, since you use the basic names to access
+the fields anyway. Also, you must use `HASH` for the `On()` option
+when you create the index. The code below shows these changes with
+a new index called `hash-idx:users`, which is otherwise the same as
+the `idx:users` index used for JSON documents in the previous examples.
+
+#### Code Examples
+
+Foundational: Create a search index for hash documents with HASH type specification
+
+**Difficulty:** Intermediate
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $hashSchema = [
+            new TextField('name'),
+            new TagField('city'),
+            new NumericField('age'),
+        ];
+        
+        try {
+        $r->ftCreate("hash-idx:users", $hashSchema,
+            (new CreateArguments())
+                ->on('HASH')
+                ->prefix(["huser:"]));
+        }
+        catch (Exception $e) {
+            echo $e->getMessage(), PHP_EOL;
+        }
+```
+
+
+
+You use [`hmset()`]() to add the hash
+documents instead of [`jsonset()`]().
+Supply the fields as an array directly, without using
+[`json_encode()`](https://www.php.net/manual/en/function.json-encode.php).
+
+#### Code Examples
+
+Foundational: Store hash documents using HSET for indexed retrieval
+
+**Difficulty:** Beginner
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $r->hmset('huser:1', [
+            'name' => 'Paul John',
+            'email' => 'paul.john@example.com',
+            'age' => 42,
+            'city' => 'London',
+        ]);
+        
+        $r->hmset('huser:2', [
+            'name' => 'Eden Zamir',
+            'email' => 'eden.zamir@example.com',
+            'age' => 29,
+            'city' => 'Tel Aviv',
+        ]);
+        
+        $r->hmset('huser:3', [
+            'name' => 'Paul Zamir',
+            'email' => 'paul.zamir@example.com',
+            'age' => 35,
+            'city' => 'Tel Aviv',
+        ]);
+```
+
+
+
+The query commands work the same here for hash as they do for JSON (but
+the name of the hash index is different). The format of the result is
+almost the same except that the fields are returned directly in the
+result array rather than in a JSON string with `$` as its key:
+
+#### Code Examples
+
+Query data: Query hash documents using the same search syntax as JSON with different result formatting
+
+**Difficulty:** Intermediate
+
+**Redis CLI:**
+
+```
+
+```
+
+**Available in:** Redis CLI, PHP
+
+**PHP:**
+
+```php
+        $res = $r->ftSearch("hash-idx:users", "Paul @age:[30 40]");
+        echo json_encode($res), PHP_EOL;
+        // >>> [1,"huser:3",["age","35","city","Tel Aviv","email","paul.zamir@example.com","name","Paul Zamir"]]
+```
+
+
+
+## More information
+
+See the [Redis Search]() docs
+for a full description of all query features with examples.

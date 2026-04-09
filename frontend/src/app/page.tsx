@@ -19,6 +19,7 @@ export type WikiDoc = {
   }>;
   relatedTitles: string[];
   wordCount: number;
+  sourceCount: number | null;
 };
 
 type Frontmatter = {
@@ -148,6 +149,7 @@ function collectDocs(): WikiDoc[] {
       headings,
       relatedTitles,
       wordCount,
+      sourceCount: frontmatter.sourceCount,
     };
   }).sort((left, right) => {
     return left.relPath.localeCompare(right.relPath);

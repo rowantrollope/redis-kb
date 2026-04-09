@@ -1,0 +1,85 @@
+---
+title: RedisInsight v1.2, January 2020
+url: https://redis.io/docs/latest/develop/tools/insight/release-notes/v1.2.0/
+retrieved_utc: '2026-04-09T20:46:00.917564+00:00'
+tags:
+- official
+- docs
+- sitemap
+fetched_url: https://redis.io/docs/latest/develop/tools/insight/release-notes/v1.2.0/index.html.md
+---
+
+# RedisInsight v1.2, January 2020
+
+```json metadata
+{
+  "title": "RedisInsight v1.2, January 2020",
+  "description": "TLS Client side authentication support and stability improvements",
+  "categories": null,
+  "tableOfContents": {"sections":[{"children":[{"id":"details","title":"Details"}],"id":"redisinsight-v122-release-notes","title":"RedisInsight v1.2.2 release notes"},{"children":[{"id":"details","title":"Details"}],"id":"redisinsight-v121-release-notes","title":"RedisInsight v1.2.1 release notes"},{"children":[{"id":"headlines","title":"Headlines"},{"id":"details","title":"Details"}],"id":"redisinsight-v120-release-notes","title":"RedisInsight v1.2.0 release notes"}]}
+
+,
+  "codeExamples": []
+}
+```## RedisInsight v1.2.2 release notes
+
+Update urgency: Medium
+
+This is a maintenance release for version 1.2.
+
+### Details
+
+- Bug Fixes:
+    - Core:
+        - This releases fixes the possible __false positive__ malware issues flagged by certain antivirus vendors introduced by [pyinstaller](https://github.com/pyinstaller/pyinstaller/issues/4633) which was reported on [reddit](https://www.reddit.com/r/redis/comments/f1qapz/redisinsight_cotains_malware/).
+
+## RedisInsight v1.2.1 release notes
+
+Update urgency: Medium
+
+This is a maintenance release for version 1.2.
+
+### Details
+
+- Enhancements:
+    - Core:
+        - Upgrade notifications: When you open RedisInsight, a notification is shown if a new version is available.
+    - RediSearch:
+        - Support for [RediSearch 1.6](https://github.com/RediSearch/RediSearch/releases/tag/v1.6.7).
+- Minor Bug Fixes:
+    - RedisTimeSeries:
+        - Time was interpreted as seconds instead of milliseconds as ([Issue 332](https://github.com/RedisTimeSeries/RedisTimeSeries/issues/332))
+
+## RedisInsight v1.2.0 release notes
+
+### Headlines
+
+- This release improves overall stability and provides fixes for issues found after the previous release.
+- Added support for Client side TLS authentication.
+- Resolved bug which caused blank pages at startup.
+
+### Details
+
+- New features:
+    - Core:
+        - Added support for Redis databases that require TLS client authentication (as in Redis Software)
+    - RedisTimeseries:
+        - Initial `auto-updating` functionality when the query's end timestamp is `+`
+- Minor Enhancements:
+    - Core:
+        - Check whether the port is available before starting.
+        - Made `localhost` the default host instead of `0.0.0.0`.
+        - Improved logging during startup.
+    - RedisGraph:
+        - Fixed height of query cards.
+    - RediSearch:
+        - Add support for zero-length and whitespace-only index names.
+- Bug Fixes:
+    - Core:
+        - Moved server to another thread instead of a separate process.
+        In certain situations, the server process was being orphaned after the main process died. This resulted in a several issues, of which the "blank page issue" was the most common. Now that the server process is in a thread instead of a process, the server is not left running when the process exits.
+    - RediSearch:
+        - Fixed several bugs in the display of summarized results in the table view.
+    - Browser:
+        - Better handling of unsupported values - link to other tools that support it or show better error message.
+        - Fixed UI issues when the screen size is varied to provide better responsiveness.
