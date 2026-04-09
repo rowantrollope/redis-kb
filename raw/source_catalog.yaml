@@ -1,0 +1,62 @@
+# Curated Redis SRE knowledge sources for scraping + ingestion.
+sources:
+  - title: Redis documentation landing
+    url: https://redis.io/docs/latest/
+    tags: [official, docs, overview]
+  - title: Redis administration docs
+    url: https://redis.io/docs/latest/operate/
+    tags: [official, operations]
+  - title: Redis persistence
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/
+    tags: [official, persistence]
+  - title: Redis replication
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/replication/
+    tags: [official, replication]
+  - title: Redis Sentinel
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/
+    tags: [official, sentinel, ha]
+  - title: Redis Cluster specification
+    url: https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/
+    tags: [official, cluster]
+  - title: Redis latency troubleshooting
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/latency/
+    tags: [official, troubleshooting, latency]
+  - title: Redis memory optimization
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/memory-optimization/
+    tags: [official, performance, memory]
+  - title: Redis security
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/security/
+    tags: [official, security]
+  - title: Redis benchmark
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/benchmarks/
+    tags: [official, performance]
+  - title: Redis commandstats
+    url: https://redis.io/docs/latest/commands/info/
+    tags: [official, observability]
+  - title: AWS ElastiCache Redis best practices
+    url: https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/BestPractices.html
+    tags: [cloud, aws, managed-redis]
+  - title: Azure Cache for Redis best practices
+    url: https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices
+    tags: [cloud, azure, managed-redis]
+  - title: Google Memorystore best practices
+    url: https://cloud.google.com/memorystore/docs/redis/best-practices
+    tags: [cloud, gcp, managed-redis]
+  - title: Redis anti-patterns
+    url: https://redis.io/learn/howtos/antipatterns
+    tags: [official, troubleshooting, design]
+  - title: Redis observability with Prometheus
+    url: https://redis.io/docs/latest/integrate/prometheus-with-redis-enterprise/
+    tags: [observability, metrics]
+  - title: Netflix EVCache architecture
+    url: https://netflixtechblog.com/caching-for-a-global-netflix-1d3f3f2f4f38
+    tags: [blog, scale, case-study]
+  - title: GitLab Redis incidents handbook
+    url: https://handbook.gitlab.com/handbook/engineering/infrastructure-platforms/data-access/redis/
+    tags: [runbook, incidents]
+  - title: Redis pipelining docs
+    url: https://redis.io/docs/latest/develop/use/pipelining/
+    tags: [performance, client]
+  - title: Redis distributed locks
+    url: https://redis.io/docs/latest/develop/use/patterns/distributed-locks/
+    tags: [design, reliability]
